@@ -93,6 +93,51 @@ app.get('/api/news', async (req, res) => {
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
+// --- RENDA FIXA: Tesouro Direto via brapi.dev ---
+let cacheTreasury = { data: null, ts: 0 };
+const TREASURY_TTL = 60 * 60 * 1000; // 1 hora (dados mudam 1x por dia)
+
+app.get('/api/treasury', async (req, res) => {
+  try {
+    if (cacheTreasury.data && Date.now() - cacheTreasury.ts < TREASURY_TTL) {
+      return res.json({ source: 'cache', bonds: cacheTreasury.data });
+    }
+    if (!BRAPI_TOKEN) {
+      return res.status(500).json({ error: true, message: 'BRAPI_TOKEN não configurado.' });
+    }
+    const url = 'https://brapi.dev/api/v2/treasury?sortBy=name&limit=50';
+    const resp = await fetch(url, { headers: { Authorization: `Bearer ${BRAPI_TOKEN}` } });
+    if (!resp.ok) throw new Error(`brapi.dev retornou ${resp.status}`);
+    const json = await resp.json();
+    const bonds = (json.treasuries || []).map(b => ({
+      name: b.name,
+      type: classifyBond(b.name),
+      sellRate: b.sellRate,
+      buyRate: b.buyRate,
+      sellPrice: b.sellPrice,
+      buyPrice: b.buyPrice,
+      maturityDate: b.maturityDate,
+      minInvestment: b.minInvestment,
+      available: b.isAvailableToSell
+    }));
+    cacheTreasury = { data: bonds, ts: Date.now() };
+    res.json({ source: 'brapi.dev', bonds });
+  } catch (err) {
+    res.status(500).json({ error: true, message: err.message });
+  }
+});
+
+function classifyBond(name) {
+  if (!name) return 'outros';
+  const n = name.toLowerCase();
+  if (n.includes('selic')) return 'selic';
+  if (n.includes('ipca')) return 'ipca';
+  if (n.includes('prefixado')) return 'prefixado';
+  if (n.includes('renda+')) return 'renda+';
+  if (n.includes('educa+')) return 'educa+';
+  return 'outros';
+}
+
 app.listen(PORT, () => {
   console.log(`Radar B3 backend rodando em http://localhost:${PORT}`);
 });
