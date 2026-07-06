@@ -1,1 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radar B3 — Bancos x Grupo Simpar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0E14;
+    --panel:#11161F;
+    --panel-2:#151B26;
+    --line:#232B3A;
+    --ink:#E9E6DC;
+    --ink-dim:#8C93A6;
+    --gold:#C9A227;
+    --green:#3FB67F;
+    --red:#D9695A;
+    --bank:#5C8AE6;
+    --simpar:#E0923C;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.55;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .display{font-family:'Fraunces', serif;}
 
+  /* ---------- Ticker tape ---------- */
+  .tape-wrap{
+    background:#0E1119;
+    border-bottom:1px solid var(--line);
+    overflow:hidden;
+    white-space:nowrap;
+    padding:10px 0;
+  }
+  .tape{
+    display:inline-flex;
+    animation:scroll 38s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce){ .tape{animation:none;} .tape-wrap{overflow-x:auto;} }
+  .tape-item{
+    display:inline-flex;
+    align-items:baseline;
+    gap:8px;
+    padding:0 22px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--ink-dim);
+    border-right:1px solid var(--line);
+  }
+  .tape-item b{color:var(--ink); font-weight:600;}
+  .up{color:var(--green);}
+  .down{color:var(--red);}
+  @keyframes scroll{
+    0%{transform:translateX(0);}
+    100%{transform:translateX(-50%);}
+  }
+
+  /* ---------- Hero ---------- */
+  header.hero{
+    max-width:880px;
+    margin:0 auto;
+    padding:64px 24px 40px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--gold);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .dot{width:6px; height:6px; border-radius:50%; background:var(--gold); display:inline-block;}
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(32px, 6vw, 50px);
+    line-height:1.08;
+    letter-spacing:-0.01em;
+    max-width:14ch;
+  }
+  h1 em{font-style:italic; font-weight:300; color:var(--ink-dim);}
+  .lede{
+    margin-top:20px;
+    font-size:16px;
+    color:var(--ink-dim);
+    max-width:58ch;
+  }
+
+  /* ---------- Sections ---------- */
+  section{
+    max-width:880px;
+    margin:0 auto;
+    padding:48px 24px;
+  }
+  .section-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--line);
+    padding-bottom:14px;
+    margin-bottom:28px;
+  }
+  .section-head h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:26px;
+  }
+  .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    padding:4px 10px;
+    border-radius:3px;
+  }
+  .tag.bank{ color:var(--bank); border:1px solid var(--bank); }
+  .tag.simpar{ color:var(--simpar); border:1px solid var(--simpar); }
+
+  .intro-text{
+    color:var(--ink-dim);
+    font-size:15px;
+    max-width:62ch;
+    margin-bottom:28px;
+  }
+
+  /* ---------- Cards ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  @media (max-width:640px){ .grid{grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:20px;
+    position:relative;
+    transition:border-color .2s ease, transform .2s ease;
+  }
+  .card:hover{ border-color:var(--ink-dim); transform:translateY(-1px); }
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:6px;
+  }
+  .ticker{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:18px;
+    font-weight:600;
+    letter-spacing:0.01em;
+  }
+  .company{
+    color:var(--ink-dim);
+    font-size:13px;
+    margin-bottom:14px;
+  }
+  .price-row{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .price{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:22px;
+    font-weight:600;
+  }
+  .var{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    font-weight:500;
+  }
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:8px;
+    border-top:1px dashed var(--line);
+    padding-top:14px;
+  }
+  .stat-label{
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-dim);
+    margin-bottom:3px;
+  }
+  .stat-val{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    font-weight:600;
+  }
+  .note{
+    margin-top:14px;
+    font-size:13px;
+    color:var(--ink-dim);
+    border-left:2px solid var(--line);
+    padding-left:10px;
+  }
+
+  /* ---------- Comparative table ---------- */
+  .table-scroll{ overflow-x:auto; }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:680px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+  }
+  th, td{
+    text-align:left;
+    padding:11px 12px;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  th{
+    color:var(--ink-dim);
+    text-transform:uppercase;
+    font-size:11px;
+    letter-spacing:0.05em;
+    font-weight:500;
+  }
+  tr.row-bank td:first-child{ border-left:2px solid var(--bank); padding-left:10px; }
+  tr.row-simpar td:first-child{ border-left:2px solid var(--simpar); padding-left:10px; }
+  td.tk{ font-weight:600; }
+
+  /* ---------- Closing ---------- */
+  .closing{
+    border-top:1px solid var(--line);
+    padding:40px 24px 64px;
+    max-width:880px;
+    margin:0 auto;
+  }
+  .closing p{
+    color:var(--ink-dim);
+    font-size:13px;
+    max-width:62ch;
+    margin-bottom:10px;
+  }
+  .closing .signature{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:15px;
+    color:var(--ink);
+    margin-bottom:18px;
+  }
+</style>
+</head>
+<body>
+
+<div class="tape-wrap">
+  <div class="tape" id="tape"></div>
+</div>
+
+<header class="hero">
+  <div class="eyebrow"><span class="dot" id="status-dot"></span>RADAR DE MERCADO · B3 · <span id="status-text">carregando cotações…</span></div>
+  <h1>Dois motores da bolsa <em>brasileira</em></h1>
+  <p class="lede">Um lado vive de spread e Selic: os quatro grandes bancos. O outro vive de frota, depreciação e ciclo de investimento: as três pernas operacionais do Grupo Simpar — Vamos, Movida e JSL, sob o guarda-chuva da holding SIMPAR (SIMH3).</p>
+</header>
+
+<section id="bancos">
+  <div class="section-head">
+    <h2>Os grandes bancos</h2>
+    <span class="tag bank">Spread &amp; crédito</span>
+  </div>
+  <p class="intro-text">Quatro teses distintas dentro do mesmo setor: BB pressionado por provisões e payout mais conservador; Bradesco em reestruturação; Itaú como referência de qualidade de resultado; Santander como porta de entrada a um controlador global.</p>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-top">
+        <span class="ticker">BBAS3</span>
+        <span class="tag bank">Banco</span>
+      </div>
+      <div class="company">Banco do Brasil S.A.</div>
+      <div class="price-row">
+        <span class="price" id="price-BBAS3">R$ 20,26</span>
+        <span class="var down" id="var-BBAS3">-0,25%</span>
+      </div>
+      <div class="stats">
+        <div><div class="stat-label">P/L</div><div class="stat-val">7,4×</div></div>
+        <div><div class="stat-label">P/VP</div><div class="stat-val">0,60×</div></div>
+        <div><div class="stat-label">DY 12m</div><div class="stat-val">2,7%</div></div>
+        <div><div class="stat-label">ROE</div><div class="stat-val">12,4%</div></div>
+      </div>
+      <div class="note">Payout mais conservador (~30%) após lucro do 4T25 cair 40,1% a/a; preço-alvo da XP revisado de R$32 → R$25.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <span class="ticker">BBDC4</span>
+        <span class="tag bank">Banco</span>
+      </div>
+      <div class="company">Banco Bradesco S.A.</div>
+      <div class="price-row">
+        <span class="price" id="price-BBDC4">R$ 18,00</span>
+        <span class="var up" id="var-BBDC4">+2,16%</span>
+      </div>
+      <div class="stats">
+        <div><div class="stat-label">P/L</div><div class="stat-val">~8×</div></div>
+        <div><div class="stat-label">P/VP</div><div class="stat-val">~0,9×</div></div>
+        <div><div class="stat-label">DY hist.</div><div class="stat-val">~8%</div></div>
+        <div><div class="stat-label">ROE</div><div class="stat-val">~13%</div></div>
+      </div>
+      <div class="note">Em reestruturação operacional; yield historicamente generoso, tese de turnaround com renda.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <span class="ticker">ITUB4</span>
+        <span class="tag bank">Banco</span>
+      </div>
+      <div class="company">Itaú Unibanco Holding S.A.</div>
+      <div class="price-row">
+        <span class="price" id="price-ITUB4">R$ 42,35</span>
+        <span class="var up" id="var-ITUB4">+1,56%</span>
+      </div>
+      <div class="stats">
+        <div><div class="stat-label">P/L</div><div class="stat-val">~10×</div></div>
+        <div><div class="stat-label">DY</div><div class="stat-val">~7,1%</div></div>
+        <div><div class="stat-label">ROE</div><div class="stat-val">24,4%</div></div>
+        <div><div class="stat-label">Status</div><div class="stat-val mono" style="font-size:11px;">Líder</div></div>
+      </div>
+      <div class="note">ROE praticamente o dobro do BB no mesmo período; vem pagando proventos extraordinários além do ordinário.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <span class="ticker">SANB11</span>
+        <span class="tag bank">Banco</span>
+      </div>
+      <div class="company">Banco Santander (Brasil) S.A.</div>
+      <div class="price-row">
+        <span class="price" id="price-SANB11">R$ 27,45</span>
+        <span class="var up" id="var-SANB11">+0,88%</span>
+      </div>
+      <div class="stats">
+        <div><div class="stat-label">P/L</div><div class="stat-val">5,1×</div></div>
+        <div><div class="stat-label">P/VP</div><div class="stat-val">0,53×</div></div>
+        <div><div class="stat-label">DY 12m</div><div class="stat-val">8,6%</div></div>
+        <div><div class="stat-label">ROE</div><div class="stat-val">10,4%</div></div>
+      </div>
+      <div class="note">Múltiplo mais descontado do quarteto; controlador global reduz parte do "risco Brasil" isolado no papel.</div>
+    </div>
+  </div>
+</section>
+
+<section id="simpar">
+  <div class="section-head">
+    <h2>Grupo Simpar</h2>
+    <span class="tag simpar">Frota &amp; logística</span>
+  </div>
+  <p class="intro-text">SIMPAR (SIMH3) é a holding-mãe, controlando ~64% de Vamos (locação de caminhões, máquinas e implementos agrícolas), além de Movida (RAC e GTF) e JSL (logística rodoviária). É uma tese de ciclo: sensível à Selic pela dívida líquida elevada, mas com ROIC operacional historicamente acima do custo de capital.</p>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-top">
+        <span class="ticker">VAMO3</span>
+        <span class="tag simpar">Locação</span>
+      </div>
+      <div class="company">Vamos Locação de Caminhões, Máquinas e Equipamentos</div>
+      <div class="price-row">
+        <span class="price" id="price-VAMO3">R$ 2,88</span>
+        <span class="var down" id="var-VAMO3">-30,6% 12m</span>
+      </div>
+      <div class="stats">
+        <div><div class="stat-label">DY 12m</div><div class="stat-val">4,9%</div></div>
+        <div><div class="stat-label">Receita 1T26</div><div class="stat-val">+22%</div></div>
+        <div><div class="stat-label">EBITDA 1T26</div><div class="stat-val">+7%</div></div>
+        <div><div class="stat-label">ROIC</div><div class="stat-val">14%</div></div>
+      </div>
+      <div class="note">Lucro do 1T26 caiu 20% a/a apesar do crescimento de receita — rentabilidade ainda pressionada pelo custo de capital. Aumento de capital de até R$600M anunciado em abr/26.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <span class="ticker">MOVI3</span>
+        <span class="tag simpar">RAC / GTF</span>
+      </div>
+      <div class="company">Movida Participações S.A.</div>
+      <div class="price-row">
+        <span class="price" id="price-MOVI3">R$ 14,75</span>
+        <span class="var up" id="var-MOVI3">+1,5%</span>
+      </div>
+      <div class="stats">
+        <div><div class="stat-label">Receita 1T26</div><div class="stat-val">+6%</div></div>
+        <div><div class="stat-label">EBITDA 1T26</div><div class="stat-val">+17%</div></div>
+        <div><div class="stat-label">Lucro 1T26</div><div class="stat-val">+59%</div></div>
+        <div><div class="stat-label">ROIC</div><div class="stat-val">16,4%</div></div>
+      </div>
+      <div class="note">Melhor execução do trio no 1T26: spread de ROIC sobre custo da dívida de 5,3 p.p., mesmo com Selic elevada.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <span class="ticker">JSLG3</span>
+        <span class="tag simpar">Logística</span>
+      </div>
+      <div class="company">JSL S.A.</div>
+      <div class="price-row">
+        <span class="price" id="price-JSLG3">—</span>
+        <span class="var down" id="var-JSLG3">DY 34,6%¹</span>
+      </div>
+      <div class="stats">
+        <div><div class="stat-label">Receita 1T26</div><div class="stat-val">+2%</div></div>
+        <div><div class="stat-label">EBITDA 1T26</div><div class="stat-val">+3%</div></div>
+        <div><div class="stat-label">Lucro 1T26</div><div class="stat-val">-86%</div></div>
+        <div><div class="stat-label">Status</div><div class="stat-val" style="font-size:11px;">Pressão</div></div>
+      </div>
+      <div class="note">¹ DY elevado provavelmente reflete queda no preço da ação, não distribuição sustentável — lucro líquido despencou 86% a/a no 1T26. Vale checar antes de tomar como referência.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <span class="ticker">SIMH3</span>
+        <span class="tag simpar">Holding</span>
+      </div>
+      <div class="company">SIMPAR S.A. (controladora)</div>
+      <div class="price-row">
+        <span class="price" id="price-SIMH3">R$ 8,07</span>
+        <span class="var up" id="var-SIMH3">+2,5%</span>
+      </div>
+      <div class="stats">
+        <div><div class="stat-label">Mkt Cap</div><div class="stat-val">R$ 4,7bi</div></div>
+        <div><div class="stat-label">Recomend.</div><div class="stat-val" style="font-size:11px;">Neutra²</div></div>
+        <div><div class="stat-label">Receita 1T26</div><div class="stat-val">+6%</div></div>
+        <div><div class="stat-label">Resultado</div><div class="stat-val" style="font-size:11px;">Prejuízo</div></div>
+      </div>
+      <div class="note">² Consenso projeta para 2026: receita +11%, EBITDA +5% e reversão de prejuízo para lucro — mas a holding ainda opera no vermelho no consolidado do 1T26.</div>
+    </div>
+  </div>
+</section>
+
+<section id="comparativo">
+  <div class="section-head">
+    <h2>Comparativo direto</h2>
+  </div>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Preço</th>
+          <th>P/L</th>
+          <th>P/VP</th>
+          <th>DY 12m</th>
+          <th>ROE</th>
+          <th>Driver principal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="row-bank">
+          <td class="tk">BBAS3</td><td>R$ 20,26</td><td>7,4×</td><td>0,60×</td><td>2,7%</td><td>12,4%</td><td>Provisões agro/PF</td>
+        </tr>
+        <tr class="row-bank">
+          <td class="tk">BBDC4</td><td>R$ 18,00</td><td>~8×</td><td>~0,9×</td><td>~8,0%</td><td>~13%</td><td>Turnaround operacional</td>
+        </tr>
+        <tr class="row-bank">
+          <td class="tk">ITUB4</td><td>R$ 42,35</td><td>~10×</td><td>—</td><td>~7,1%</td><td>24,4%</td><td>Qualidade de resultado</td>
+        </tr>
+        <tr class="row-bank">
+          <td class="tk">SANB11</td><td>R$ 27,45</td><td>5,1×</td><td>0,53×</td><td>8,6%</td><td>10,4%</td><td>Desconto de múltiplo</td>
+        </tr>
+        <tr class="row-simpar">
+          <td class="tk">VAMO3</td><td>R$ 2,88</td><td>—</td><td>—</td><td>4,9%</td><td>—</td><td>Selic / custo de dívida</td>
+        </tr>
+        <tr class="row-simpar">
+          <td class="tk">MOVI3</td><td>R$ 14,75</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Ocupação RAC + tarifa</td>
+        </tr>
+        <tr class="row-simpar">
+          <td class="tk">JSLG3</td><td>—</td><td>—</td><td>—</td><td>34,6%¹</td><td>—</td><td>Margem sob pressão</td>
+        </tr>
+        <tr class="row-simpar">
+          <td class="tk">SIMH3</td><td>R$ 8,07</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Consolidação do grupo</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="closing">
+  <p class="signature">Bancos vendem dinheiro. Simpar vende tempo de uso de ativo. São ciclos diferentes — e raramente caem juntos pelo mesmo motivo.</p>
+  <p>Dados indicativos de mercado coletados em fontes públicas (HG Brasil, BTG Pactual Research, Investidor10, Yahoo Finance, Nord Investimentos) com pequena defasagem intradiária possível entre fontes. Não constitui recomendação de compra ou venda — confira sempre a cotação em tempo real na sua corretora antes de qualquer decisão.</p>
+</div>
+
+<script>
+  // Dados estáticos de fallback (caso o backend / brapi.dev esteja indisponível)
+  const FALLBACK = [
+    {ticker:'BBAS3', price:20.26, changePercent:-0.25},
+    {ticker:'BBDC4', price:18.00, changePercent:2.16},
+    {ticker:'ITUB4', price:42.35, changePercent:1.56},
+    {ticker:'SANB11', price:27.45, changePercent:0.88},
+    {ticker:'VAMO3', price:2.88, changePercent:-1.37},
+    {ticker:'MOVI3', price:14.75, changePercent:1.52},
+    {ticker:'JSLG3', price:null, changePercent:null},
+    {ticker:'SIMH3', price:8.07, changePercent:2.54},
+  ];
+
+  function fmtPrice(p){
+    return p == null ? '—' : 'R$ ' + p.toFixed(2).replace('.', ',');
+  }
+  function fmtVar(v){
+    if(v == null) return '—';
+    const arrow = v >= 0 ? '▲' : '▼';
+    return `${arrow} ${Math.abs(v).toFixed(2)}%`;
+  }
+
+  function renderTape(list){
+    const row = list.map(i => `<span class="tape-item"><b>${i.ticker}</b> ${fmtPrice(i.price)} <span class="${(i.changePercent||0)>=0?'up':'down'}">${fmtVar(i.changePercent)}</span></span>`).join('');
+    document.getElementById('tape').innerHTML = row + row;
+  }
+
+  function updateCards(list){
+    list.forEach(i => {
+      const priceEl = document.getElementById('price-' + i.ticker);
+      const varEl = document.getElementById('var-' + i.ticker);
+      if (priceEl && i.price != null) priceEl.textContent = fmtPrice(i.price);
+      if (varEl && i.changePercent != null) {
+        varEl.textContent = fmtVar(i.changePercent);
+        varEl.classList.toggle('up', i.changePercent >= 0);
+        varEl.classList.toggle('down', i.changePercent < 0);
+      }
+    });
+  }
+
+  function setStatus(text, live){
+    document.getElementById('status-text').textContent = text;
+    document.getElementById('status-dot').style.background = live ? 'var(--green)' : 'var(--gold)';
+  }
+
+  async function loadQuotes(){
+    try {
+      const resp = await fetch('/api/quotes');
+      const json = await resp.json();
+      if (!resp.ok || json.error) throw new Error(json.message || 'Falha ao buscar cotações');
+      renderTape(json.quotes);
+      updateCards(json.quotes);
+      const now = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+      setStatus(`ao vivo via brapi.dev · atualizado às ${now}`, true);
+    } catch (err) {
+      renderTape(FALLBACK);
+      setStatus('dados estáticos (backend indisponível)', false);
+      console.warn('Radar B3: usando fallback —', err.message);
+    }
+  }
+
+  loadQuotes();
+  setInterval(loadQuotes, 60000); // atualiza a cada 60s
+</script>
+
+</body>
+</html>
