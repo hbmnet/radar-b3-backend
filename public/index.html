@@ -107,6 +107,7 @@
     <button class="nav-btn active" onclick="showPage('cotacoes')">Cotações</button>
     <button class="nav-btn" onclick="showPage('noticias')">Notícias</button>
     <button class="nav-btn" onclick="showPage('opcoes')">Opções</button>
+    <button class="nav-btn" onclick="showPage('rendafixa')">Renda Fixa</button>
   </div>
 </nav>
 
@@ -384,6 +385,69 @@
   </div>
 </div><!-- /page-opcoes -->
 
+<!-- PAGE: RENDA FIXA -->
+<div id="page-rendafixa" class="page">
+  <div class="news-section">
+
+    <div class="section-head" style="max-width:880px;margin:36px auto 0;padding:0 24px 12px;">
+      <h2>Renda Fixa</h2>
+      <span class="tag bank">Tesouro Direto</span>
+    </div>
+
+    <div style="max-width:880px;margin:0 auto;padding:8px 24px 0;">
+      <p class="intro-text">Títulos públicos disponíveis para compra hoje, com taxas atualizadas diariamente via brapi.dev. Clique em qualquer título para abrir no site oficial do Tesouro Direto.</p>
+    </div>
+
+    <!-- Filtros -->
+    <div style="max-width:880px;margin:16px auto 0;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="nav-btn active" id="filter-todos" onclick="filterBonds('todos')" style="border:1px solid var(--line);">Todos</button>
+      <button class="nav-btn" id="filter-selic" onclick="filterBonds('selic')" style="border:1px solid var(--line);">Tesouro Selic</button>
+      <button class="nav-btn" id="filter-ipca" onclick="filterBonds('ipca')" style="border:1px solid var(--line);">IPCA+</button>
+      <button class="nav-btn" id="filter-prefixado" onclick="filterBonds('prefixado')" style="border:1px solid var(--line);">Prefixado</button>
+    </div>
+
+    <!-- Tabela de títulos -->
+    <div style="max-width:880px;margin:20px auto;padding:0 24px 48px;">
+      <div id="treasury-loading" class="news-loading">Carregando títulos…</div>
+      <div id="treasury-error" style="display:none;" class="news-error"></div>
+      <div class="table-scroll" id="treasury-table-wrap" style="display:none;">
+        <table id="treasury-table">
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Vencimento</th>
+              <th>Taxa</th>
+              <th>Preço mín.</th>
+              <th>Tipo</th>
+            </tr>
+          </thead>
+          <tbody id="treasury-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CDB / LCA / LCI info -->
+    <div style="max-width:880px;margin:0 auto;padding:0 24px 48px;">
+      <div class="news-source-title">CDB · LCA · LCI — Taxas de referência (Banco Central)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="bcb-cards">
+        <div class="card">
+          <div class="ticker" style="font-size:15px;">CDB</div>
+          <div class="company">Certificado de Depósito Bancário</div>
+          <div class="price-row"><span class="price" style="font-size:18px;" id="bcb-cdi">—</span></div>
+          <div class="note">Referência: CDI (taxa overnight). CDBs de bancos médios costumam pagar 100–120% do CDI. Liquidez varia — verifique carência antes de investir.</div>
+        </div>
+        <div class="card">
+          <div class="ticker" style="font-size:15px;">LCA / LCI</div>
+          <div class="company">Letra de Crédito Agro / Imobiliário</div>
+          <div class="price-row"><span class="price" style="font-size:18px;" id="bcb-lca">Isento IR</span></div>
+          <div class="note">Isentas de IR para pessoa física. Rentabilidade bruta menor que CDB, mas líquida pode ser superior. Carência mínima de 9 meses (LCA) e 12 meses (LCI).</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /page-rendafixa -->
+
 <script>
   // --- Navegação ---
   function showPage(id) {
@@ -395,6 +459,7 @@
     });
     window.scrollTo(0, 0);
     if (id === 'noticias') loadNews();
+    if (id === 'rendafixa') loadTreasury();
   }
 
   // --- Cotações ---
@@ -451,7 +516,71 @@
   loadQuotes();
   setInterval(loadQuotes,60000);
 
-  // --- Notícias ---
+  // --- Renda Fixa ---
+  let allBonds = [];
+  let bondsLoaded = false;
+
+  async function loadTreasury() {
+    if (bondsLoaded) return;
+    try {
+      const resp = await fetch('/api/treasury');
+      const json = await resp.json();
+      if (!resp.ok || json.error) throw new Error(json.message || 'erro');
+      allBonds = json.bonds.filter(b => b.available);
+      renderBonds('todos');
+      bondsLoaded = true;
+      document.getElementById('treasury-loading').style.display = 'none';
+      document.getElementById('treasury-table-wrap').style.display = 'block';
+      loadCDI();
+    } catch (err) {
+      document.getElementById('treasury-loading').style.display = 'none';
+      const errEl = document.getElementById('treasury-error');
+      errEl.style.display = 'block';
+      errEl.textContent = 'Não foi possível carregar os títulos: ' + err.message;
+    }
+  }
+
+  function filterBonds(type) {
+    document.querySelectorAll('[id^="filter-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById('filter-' + type).classList.add('active');
+    renderBonds(type);
+  }
+
+  function renderBonds(type) {
+    const filtered = type === 'todos' ? allBonds : allBonds.filter(b => b.type === type);
+    const tbody = document.getElementById('treasury-tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--ink-dim);text-align:center;padding:24px;">Nenhum título disponível nessa categoria.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(b => {
+      const rate = b.sellRate != null ? (b.sellRate * 100).toFixed(2) + '% a.a.' : '—';
+      const price = b.minInvestment != null ? 'R$ ' + b.minInvestment.toFixed(2).replace('.', ',') : '—';
+      const mat = b.maturityDate ? new Date(b.maturityDate).toLocaleDateString('pt-BR') : '—';
+      const typeLabel = {selic:'Selic',ipca:'IPCA+',prefixado:'Prefixado','renda+':'Renda+','educa+':'Educa+',outros:'Outros'}[b.type] || b.type;
+      const typeColor = {selic:'var(--green)',ipca:'var(--gold)',prefixado:'var(--bank)','renda+':'var(--simpar)','educa+':'var(--simpar)'}[b.type] || 'var(--ink-dim)';
+      return `<tr class="row-bank">
+        <td class="tk"><a href="https://www.tesourodireto.com.br/titulos-publicos/conheca-os-titulos.htm" target="_blank" rel="noopener" style="color:var(--ink);text-decoration:none;">${b.name}</a></td>
+        <td>${mat}</td>
+        <td style="color:var(--green);font-weight:600;">${rate}</td>
+        <td>${price}</td>
+        <td><span style="color:${typeColor};font-size:11px;font-weight:600;">${typeLabel}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function loadCDI() {
+    try {
+      const resp = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json');
+      const json = await resp.json();
+      if (json && json[0]) {
+        const cdi = parseFloat(json[0].valor.replace(',', '.'));
+        document.getElementById('bcb-cdi').textContent = cdi.toFixed(2) + '% a.a. (CDI)';
+      }
+    } catch (e) { /* silencioso */ }
+  }
+
+
   let newsLoaded = false;
   async function loadNews(){
     if(newsLoaded) return;
