@@ -28,23 +28,6 @@ let cacheNews = { data: null, ts: 0 };
 const NEWS_TTL = 5 * 60 * 1000; // 5 minutos
 
 // --- COTAÇÕES ---
-async function fetchTickerBatch(tickers) {
-  const url = `https://brapi.dev/api/quote/${tickers.join(',')}`;
-  const resp = await fetch(url, {
-    headers: { Authorization: `Bearer ${BRAPI_TOKEN}` },
-    signal: AbortSignal.timeout(10000)
-  });
-  if (!resp.ok) throw new Error(`brapi.dev retornou ${resp.status}`);
-  const json = await resp.json();
-  return (json.results || []).map(r => ({
-    ticker: r.symbol,
-    name: r.shortName || r.longName || r.symbol,
-    price: r.regularMarketPrice,
-    changePercent: r.regularMarketChangePercent,
-    updatedAt: r.regularMarketTime
-  }));
-}
-
 app.get('/api/quotes', async (req, res) => {
   try {
     if (cacheQuotes.data && Date.now() - cacheQuotes.ts < QUOTES_TTL) {
@@ -54,22 +37,33 @@ app.get('/api/quotes', async (req, res) => {
       return res.status(500).json({ error: true, message: 'BRAPI_TOKEN não configurado.' });
     }
 
-    // Busca em lotes de 10 para não estourar limite do plano gratuito
-    const BATCH_SIZE = 10;
-    const batches = [];
-    for (let i = 0; i < TICKERS.length; i += BATCH_SIZE) {
-      batches.push(TICKERS.slice(i, i + BATCH_SIZE));
+    // Busca todos de uma vez — plano gratuito brapi.dev suporta até 50 tickers
+    const url = `https://brapi.dev/api/quote/${TICKERS.join(',')}?token=${BRAPI_TOKEN}`;
+    console.log('[quotes] buscando', TICKERS.length, 'tickers');
+    const resp = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    console.log('[quotes] status:', resp.status);
+
+    if (!resp.ok) {
+      const body = await resp.text();
+      console.log('[quotes] erro body:', body.slice(0, 200));
+      throw new Error(`brapi.dev retornou ${resp.status}: ${body.slice(0, 100)}`);
     }
 
-    const results = await Promise.allSettled(
-      batches.map(batch => fetchTickerBatch(batch))
-    );
+    const json = await resp.json();
+    console.log('[quotes] results count:', (json.results||[]).length);
 
-    const quotes = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+    const quotes = (json.results || []).map(r => ({
+      ticker: r.symbol,
+      name: r.shortName || r.longName || r.symbol,
+      price: r.regularMarketPrice,
+      changePercent: r.regularMarketChangePercent,
+      updatedAt: r.regularMarketTime
+    }));
 
     cacheQuotes = { data: quotes, ts: Date.now() };
     res.json({ source: 'brapi.dev', quotes });
   } catch (err) {
+    console.error('[quotes] erro:', err.message);
     res.status(500).json({ error: true, message: err.message });
   }
 });
