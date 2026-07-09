@@ -28,6 +28,23 @@ let cacheNews = { data: null, ts: 0 };
 const NEWS_TTL = 5 * 60 * 1000; // 5 minutos
 
 // --- COTAÇÕES ---
+async function fetchTickerBatch(tickers) {
+  const url = `https://brapi.dev/api/quote/${tickers.join(',')}`;
+  const resp = await fetch(url, {
+    headers: { Authorization: `Bearer ${BRAPI_TOKEN}` },
+    signal: AbortSignal.timeout(10000)
+  });
+  if (!resp.ok) throw new Error(`brapi.dev retornou ${resp.status}`);
+  const json = await resp.json();
+  return (json.results || []).map(r => ({
+    ticker: r.symbol,
+    name: r.shortName || r.longName || r.symbol,
+    price: r.regularMarketPrice,
+    changePercent: r.regularMarketChangePercent,
+    updatedAt: r.regularMarketTime
+  }));
+}
+
 app.get('/api/quotes', async (req, res) => {
   try {
     if (cacheQuotes.data && Date.now() - cacheQuotes.ts < QUOTES_TTL) {
@@ -36,17 +53,20 @@ app.get('/api/quotes', async (req, res) => {
     if (!BRAPI_TOKEN) {
       return res.status(500).json({ error: true, message: 'BRAPI_TOKEN não configurado.' });
     }
-    const url = `https://brapi.dev/api/quote/${TICKERS.join(',')}`;
-    const resp = await fetch(url, { headers: { Authorization: `Bearer ${BRAPI_TOKEN}` } });
-    if (!resp.ok) throw new Error(`brapi.dev retornou ${resp.status}`);
-    const json = await resp.json();
-    const quotes = (json.results || []).map(r => ({
-      ticker: r.symbol,
-      name: r.shortName || r.longName || r.symbol,
-      price: r.regularMarketPrice,
-      changePercent: r.regularMarketChangePercent,
-      updatedAt: r.regularMarketTime
-    }));
+
+    // Busca em lotes de 10 para não estourar limite do plano gratuito
+    const BATCH_SIZE = 10;
+    const batches = [];
+    for (let i = 0; i < TICKERS.length; i += BATCH_SIZE) {
+      batches.push(TICKERS.slice(i, i + BATCH_SIZE));
+    }
+
+    const results = await Promise.allSettled(
+      batches.map(batch => fetchTickerBatch(batch))
+    );
+
+    const quotes = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+
     cacheQuotes = { data: quotes, ts: Date.now() };
     res.json({ source: 'brapi.dev', quotes });
   } catch (err) {
