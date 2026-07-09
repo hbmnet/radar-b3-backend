@@ -108,6 +108,7 @@
     <button class="nav-btn" onclick="showPage('noticias')">Notícias</button>
     <button class="nav-btn" onclick="showPage('opcoes')">Opções</button>
     <button class="nav-btn" onclick="showPage('rendafixa')">Renda Fixa</button>
+    <button class="nav-btn" onclick="showPage('aluguel')">Aluguel</button>
   </div>
 </nav>
 
@@ -448,6 +449,46 @@
   </div>
 </div><!-- /page-rendafixa -->
 
+<!-- PAGE: ALUGUEL -->
+<div id="page-aluguel" class="page">
+  <div class="news-section">
+
+    <div class="section-head" style="max-width:880px;margin:36px auto 0;padding:0 24px 12px;">
+      <h2>Ações Mais Alugadas</h2>
+      <span class="tag simpar">BTC · B3</span>
+    </div>
+
+    <div style="max-width:880px;margin:0 auto;padding:8px 24px 16px;">
+      <p class="intro-text">Ranking das ações com maior taxa de aluguel (doador) na B3. Taxas altas indicam forte interesse em operar vendido — útil para identificar papéis com posições short elevadas. Dados do boletim diário da B3, atualizados após o fechamento do mercado.</p>
+    </div>
+
+    <div style="max-width:880px;margin:0 auto;padding:0 24px;">
+      <div id="aluguel-loading" class="news-loading">Carregando dados de aluguel…</div>
+      <div id="aluguel-error" style="display:none;" class="news-error"></div>
+      <div id="aluguel-source" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-dim);margin-bottom:12px;display:none;"></div>
+      <div class="table-scroll" id="aluguel-table-wrap" style="display:none;">
+        <table id="aluguel-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Ticker</th>
+              <th>Taxa Doador</th>
+              <th>Taxa Tomador</th>
+              <th>Qtd. Contratos</th>
+            </tr>
+          </thead>
+          <tbody id="aluguel-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="max-width:880px;margin:24px auto 48px;padding:0 24px;">
+      <div class="note">Taxa Doador = remuneração recebida por quem empresta as ações. Taxa Tomador = custo total de quem aluga (inclui comissão da corretora). Quanto maior a taxa, mais caro está o aluguel — sinal de escassez de papéis disponíveis ou alta demanda por vendas a descoberto.</div>
+    </div>
+
+  </div>
+</div><!-- /page-aluguel -->
+
 <script>
   // --- Navegação ---
   function showPage(id) {
@@ -460,6 +501,7 @@
     window.scrollTo(0, 0);
     if (id === 'noticias') loadNews();
     if (id === 'rendafixa') loadTreasury();
+    if (id === 'aluguel') loadAluguel();
   }
 
   // --- Cotações ---
@@ -580,6 +622,46 @@
     } catch (e) { /* silencioso */ }
   }
 
+  // --- Aluguel ---
+  let aluguelLoaded = false;
+
+  async function loadAluguel() {
+    if (aluguelLoaded) return;
+    try {
+      const resp = await fetch('/api/aluguel');
+      const json = await resp.json();
+      if (!resp.ok || json.error) throw new Error(json.message || 'erro');
+
+      const sourceEl = document.getElementById('aluguel-source');
+      sourceEl.style.display = 'block';
+      sourceEl.textContent = json.source === 'fallback'
+        ? '⚠ Dados de referência (boletim B3 indisponível no momento)'
+        : `Fonte: B3 Boletim Diário · ${json.date}`;
+
+      const tbody = document.getElementById('aluguel-tbody');
+      tbody.innerHTML = json.items.map((item, i) => {
+        const taxa = parseFloat(item.taxaDoador.replace(',', '.')) || 0;
+        const color = taxa >= 30 ? 'var(--red)' : taxa >= 15 ? 'var(--simpar)' : taxa >= 8 ? 'var(--gold)' : 'var(--green)';
+        const isMine = ['VAMO3','MOVI3','JSLG3','SIMH3','BBAS3','BBDC4','ITUB4','SANB11'].includes(item.ticker);
+        return `<tr class="${isMine ? 'row-simpar' : ''}">
+          <td style="color:var(--ink-dim);">${i + 1}</td>
+          <td class="tk">${item.ticker}${isMine ? ' <span style="font-size:10px;color:var(--gold);">★</span>' : ''}</td>
+          <td style="color:${color};font-weight:600;">${item.taxaDoador}% a.a.</td>
+          <td style="color:var(--ink-dim);">${item.taxaTomador}% a.a.</td>
+          <td style="color:var(--ink-dim);">${Number(String(item.quantidade).replace(/\./g,'')).toLocaleString('pt-BR')}</td>
+        </tr>`;
+      }).join('');
+
+      document.getElementById('aluguel-loading').style.display = 'none';
+      document.getElementById('aluguel-table-wrap').style.display = 'block';
+      aluguelLoaded = true;
+    } catch (err) {
+      document.getElementById('aluguel-loading').style.display = 'none';
+      const errEl = document.getElementById('aluguel-error');
+      errEl.style.display = 'block';
+      errEl.textContent = 'Não foi possível carregar os dados: ' + err.message;
+    }
+  }
 
   let newsLoaded = false;
   async function loadNews(){
