@@ -474,6 +474,7 @@
               <th>Ticker</th>
               <th>Taxa Doador</th>
               <th>Taxa Tomador</th>
+              <th>% em Aluguel</th>
               <th>Qtd. Contratos</th>
             </tr>
           </thead>
@@ -648,6 +649,7 @@
           <td class="tk">${item.ticker}${isMine ? ' <span style="font-size:10px;color:var(--gold);">★</span>' : ''}</td>
           <td style="color:${color};font-weight:600;">${item.taxaDoador}% a.a.</td>
           <td style="color:var(--ink-dim);">${item.taxaTomador}% a.a.</td>
+          <td style="color:var(--gold);font-weight:600;">${item.pctAluguel ? item.pctAluguel + '%' : '—'}</td>
           <td style="color:var(--ink-dim);">${Number(String(item.quantidade).replace(/\./g,'')).toLocaleString('pt-BR')}</td>
         </tr>`;
       }).join('');
