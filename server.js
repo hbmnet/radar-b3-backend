@@ -205,18 +205,18 @@ app.get('/api/aluguel', async (req, res) => {
   } catch (err) {
     // Fallback com dados representativos do mercado
     const fallback = [
-      { ticker: 'VAMO3',  taxaDoador: '45,20', taxaTomador: '48,50', quantidade: '12.400.000' },
-      { ticker: 'COGN3',  taxaDoador: '38,10', taxaTomador: '41,20', quantidade: '98.200.000' },
-      { ticker: 'MOVI3',  taxaDoador: '22,40', taxaTomador: '25,10', quantidade: '8.700.000'  },
-      { ticker: 'MGLU3',  taxaDoador: '18,90', taxaTomador: '21,30', quantidade: '210.500.000'},
-      { ticker: 'CVCB3',  taxaDoador: '15,70', taxaTomador: '18,20', quantidade: '34.100.000' },
-      { ticker: 'JSLG3',  taxaDoador: '14,30', taxaTomador: '16,80', quantidade: '5.200.000'  },
-      { ticker: 'PETZ3',  taxaDoador: '12,80', taxaTomador: '15,10', quantidade: '41.300.000' },
-      { ticker: 'EMBR3',  taxaDoador: '11,40', taxaTomador: '13,90', quantidade: '22.800.000' },
-      { ticker: 'SIMH3',  taxaDoador: '10,20', taxaTomador: '12,60', quantidade: '9.100.000'  },
-      { ticker: 'BBDC4',  taxaDoador: '8,90',  taxaTomador: '11,20', quantidade: '56.400.000' },
-      { ticker: 'BBAS3',  taxaDoador: '7,50',  taxaTomador: '9,80',  quantidade: '44.700.000' },
-      { ticker: 'ITUB4',  taxaDoador: '5,30',  taxaTomador: '7,60',  quantidade: '31.200.000' },
+      { ticker: 'VAMO3',  taxaDoador: '45,20', taxaTomador: '48,50', quantidade: '12.400.000', pctAluguel: '18,40' },
+      { ticker: 'COGN3',  taxaDoador: '38,10', taxaTomador: '41,20', quantidade: '98.200.000', pctAluguel: '22,10' },
+      { ticker: 'MOVI3',  taxaDoador: '22,40', taxaTomador: '25,10', quantidade: '8.700.000',  pctAluguel: '9,80'  },
+      { ticker: 'MGLU3',  taxaDoador: '18,90', taxaTomador: '21,30', quantidade: '210.500.000',pctAluguel: '15,30' },
+      { ticker: 'CVCB3',  taxaDoador: '15,70', taxaTomador: '18,20', quantidade: '34.100.000', pctAluguel: '30,71' },
+      { ticker: 'JSLG3',  taxaDoador: '14,30', taxaTomador: '16,80', quantidade: '5.200.000',  pctAluguel: '11,20' },
+      { ticker: 'PETZ3',  taxaDoador: '12,80', taxaTomador: '15,10', quantidade: '41.300.000', pctAluguel: '8,50'  },
+      { ticker: 'EMBR3',  taxaDoador: '11,40', taxaTomador: '13,90', quantidade: '22.800.000', pctAluguel: '6,30'  },
+      { ticker: 'SIMH3',  taxaDoador: '10,20', taxaTomador: '12,60', quantidade: '9.100.000',  pctAluguel: '7,90'  },
+      { ticker: 'BBDC4',  taxaDoador: '8,90',  taxaTomador: '11,20', quantidade: '56.400.000', pctAluguel: '4,20'  },
+      { ticker: 'BBAS3',  taxaDoador: '7,50',  taxaTomador: '9,80',  quantidade: '44.700.000', pctAluguel: '3,10'  },
+      { ticker: 'ITUB4',  taxaDoador: '5,30',  taxaTomador: '7,60',  quantidade: '31.200.000', pctAluguel: '2,40'  },
     ];
     res.json({ source: 'fallback', date: 'dados de referência', items: fallback });
   }
