@@ -6,7 +6,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const BRAPI_TOKEN = process.env.BRAPI_TOKEN || '';
 
-const TICKERS = ['BBAS3', 'BBDC4', 'ITUB4', 'SANB11', 'VAMO3', 'MOVI3', 'JSLG3', 'SIMH3'];
+const TICKERS_BY_SECTOR = {
+  'Bancos': ['BBAS3','BBDC4','ITUB4','SANB11','BPAC11','BMGB4'],
+  'Grupo Simpar': ['VAMO3','MOVI3','JSLG3','SIMH3'],
+  'Petróleo & Energia': ['PETR3','PETR4','PRIO3','RECV3','CSAN3','EGIE3','ENEV3','CPFE3','CMIG4','ELET3'],
+  'Mineração & Siderurgia': ['VALE3','CSNA3','GGBR4','USIM5'],
+  'Varejo & Consumo': ['MGLU3','RENT3','LREN3','PCAR3','ASAI3','CRFB3'],
+  'Telecom': ['VIVT3','TIMS3'],
+  'Transportes': ['GOLL4','AZUL4','CCRO3','ECOR3','RAIL3'],
+};
+const TICKERS = Object.values(TICKERS_BY_SECTOR).flat();
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -93,7 +102,7 @@ app.get('/api/news', async (req, res) => {
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
-// --- RENDA FIXA: Tesouro Direto via brapi.dev ---
+// --- RENDA FIXA: Tesouro Direto via API oficial (gratuita, sem token) ---
 let cacheTreasury = { data: null, ts: 0 };
 const TREASURY_TTL = 60 * 60 * 1000; // 1 hora (dados mudam 1x por dia)
 
@@ -102,26 +111,30 @@ app.get('/api/treasury', async (req, res) => {
     if (cacheTreasury.data && Date.now() - cacheTreasury.ts < TREASURY_TTL) {
       return res.json({ source: 'cache', bonds: cacheTreasury.data });
     }
-    if (!BRAPI_TOKEN) {
-      return res.status(500).json({ error: true, message: 'BRAPI_TOKEN não configurado.' });
-    }
-    const url = 'https://brapi.dev/api/v2/treasury?sortBy=name&limit=50';
-    const resp = await fetch(url, { headers: { Authorization: `Bearer ${BRAPI_TOKEN}` } });
-    if (!resp.ok) throw new Error(`brapi.dev retornou ${resp.status}`);
+    const url = 'https://www.tesourodireto.com.br/json/br/com/b3/tesouro/bond/search.json';
+    const resp = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(10000)
+    });
+    if (!resp.ok) throw new Error(`Tesouro Direto retornou ${resp.status}`);
     const json = await resp.json();
-    const bonds = (json.treasuries || []).map(b => ({
-      name: b.name,
-      type: classifyBond(b.name),
-      sellRate: b.sellRate,
-      buyRate: b.buyRate,
-      sellPrice: b.sellPrice,
-      buyPrice: b.buyPrice,
-      maturityDate: b.maturityDate,
-      minInvestment: b.minInvestment,
-      available: b.isAvailableToSell
-    }));
+    const lista = json?.response?.TrsrBdTradgList || [];
+    const bonds = lista
+      .filter(b => b.TrsrBd?.stsCd === 1)
+      .slice(0, 20)
+      .map(b => {
+        const bd = b.TrsrBd;
+        return {
+          name: bd.nm,
+          type: classifyBond(bd.nm),
+          sellRate: bd.anulInvstmtRate ? bd.anulInvstmtRate / 100 : null,
+          maturityDate: bd.mtrtyDt,
+          minInvestment: bd.minInvstmtAmt,
+          available: true
+        };
+      });
     cacheTreasury = { data: bonds, ts: Date.now() };
-    res.json({ source: 'brapi.dev', bonds });
+    res.json({ source: 'tesourodireto.com.br', bonds });
   } catch (err) {
     res.status(500).json({ error: true, message: err.message });
   }
