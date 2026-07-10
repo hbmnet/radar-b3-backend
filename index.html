@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radar B3 — Bancos x Grupo Simpar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0E14;--panel:#11161F;--panel-2:#151B26;--line:#232B3A;
+    --ink:#E9E6DC;--ink-dim:#8C93A6;--gold:#C9A227;--green:#3FB67F;
+    --red:#D9695A;--bank:#5C8AE6;--simpar:#E0923C;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.55;}
+
+  /* Navbar */
+  .navbar{position:sticky;top:0;z-index:100;background:rgba(11,14,20,0.93);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;}
+  .navbar-brand{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--gold);letter-spacing:0.08em;}
+  .navbar-links{display:flex;gap:4px;}
+  .nav-btn{font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:var(--ink-dim);background:none;border:none;cursor:pointer;padding:6px 14px;border-radius:4px;transition:background .15s,color .15s;}
+  .nav-btn:hover{background:var(--panel);color:var(--ink);}
+  .nav-btn.active{background:var(--panel-2);color:var(--ink);}
+
+  /* Pages */
+  .page{display:none;}
+  .page.active{display:block;}
+
+  /* Tape */
+  .tape-wrap{background:#0E1119;border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap;padding:10px 0;}
+  .tape{display:inline-flex;animation:scroll 38s linear infinite;}
+  @media(prefers-reduced-motion:reduce){.tape{animation:none;}.tape-wrap{overflow-x:auto;}}
+  .tape-item{display:inline-flex;align-items:baseline;gap:8px;padding:0 22px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink-dim);border-right:1px solid var(--line);}
+  .tape-item b{color:var(--ink);font-weight:600;}
+  .up{color:var(--green);}.down{color:var(--red);}
+  @keyframes scroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+  /* Hero */
+  header.hero{max-width:880px;margin:0 auto;padding:48px 24px 32px;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);display:inline-block;}
+  h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(28px,5vw,44px);line-height:1.1;letter-spacing:-0.01em;max-width:14ch;}
+  h1 em{font-style:italic;font-weight:300;color:var(--ink-dim);}
+  .lede{margin-top:14px;font-size:15px;color:var(--ink-dim);max-width:58ch;}
+
+  /* Sections */
+  section{max-width:880px;margin:0 auto;padding:36px 24px;}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:24px;}
+  .section-head h2{font-family:'Fraunces',serif;font-weight:600;font-size:24px;}
+  .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;}
+  .tag.bank{color:var(--bank);border:1px solid var(--bank);}
+  .tag.simpar{color:var(--simpar);border:1px solid var(--simpar);}
+  .intro-text{color:var(--ink-dim);font-size:14px;max-width:62ch;margin-bottom:22px;}
+
+  /* Cards */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:640px){.grid{grid-template-columns:1fr;}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px;transition:border-color .2s,transform .2s;}
+  .card:hover{border-color:var(--ink-dim);transform:translateY(-1px);}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}
+  .ticker{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;}
+  .company{color:var(--ink-dim);font-size:12px;margin-bottom:12px;}
+  .price-row{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;}
+  .price{font-family:'IBM Plex Mono',monospace;font-size:21px;font-weight:600;}
+  .var{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;border-top:1px dashed var(--line);padding-top:12px;}
+  .stat-label{font-size:9px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-dim);margin-bottom:2px;}
+  .stat-val{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;}
+  .note{margin-top:12px;font-size:12px;color:var(--ink-dim);border-left:2px solid var(--line);padding-left:10px;}
+
+  /* Table */
+  .table-scroll{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;min-width:640px;font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  th{color:var(--ink-dim);text-transform:uppercase;font-size:10px;letter-spacing:0.05em;font-weight:500;}
+  tr.row-bank td:first-child{border-left:2px solid var(--bank);padding-left:10px;}
+  tr.row-simpar td:first-child{border-left:2px solid var(--simpar);padding-left:10px;}
+  td.tk{font-weight:600;}
+
+  /* Closing */
+  .closing{border-top:1px solid var(--line);padding:32px 24px 56px;max-width:880px;margin:0 auto;}
+  .closing p{color:var(--ink-dim);font-size:12px;max-width:62ch;margin-bottom:8px;}
+  .closing .signature{font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:var(--ink);margin-bottom:14px;}
+
+  /* Opções ticker grid */
+  .ticker-opt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:4px;}
+  .ticker-opt{
+    background:var(--panel);border:1px solid var(--line);border-radius:6px;
+    padding:12px 8px;text-align:center;cursor:pointer;
+    font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;
+    color:var(--ink);transition:border-color .15s,background .15s,transform .15s;
+  }
+  .ticker-opt:hover{border-color:var(--gold);background:var(--panel-2);transform:translateY(-1px);}
+  .ticker-opt.active{border-color:var(--gold);background:var(--panel-2);}
+  .ticker-opt.bank-opt{border-top:2px solid var(--bank);}
+  .ticker-opt.simpar-opt{border-top:2px solid var(--simpar);}
+  .venc-link{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px 16px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:6px;text-decoration:none;transition:border-color .2s;flex-wrap:wrap;gap:8px;
+  }
+  .venc-link:hover{border-color:var(--gold);}
+
+  /* News */
+  .news-section{max-width:880px;margin:0 auto;padding:36px 24px;}
+  .news-source-block{margin-bottom:40px;}
+  .news-source-title{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+  .news-source-title::after{content:'';flex:1;height:1px;background:var(--line);}
+  .news-list{display:flex;flex-direction:column;gap:2px;}
+  .news-item{display:block;text-decoration:none;padding:16px;background:var(--panel);border:1px solid var(--line);border-radius:6px;transition:border-color .2s,transform .2s;}
+  .news-item:hover{border-color:var(--ink-dim);transform:translateX(2px);}
+  .news-item-title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:6px;line-height:1.4;}
+  .news-item-desc{font-size:12px;color:var(--ink-dim);line-height:1.5;margin-bottom:8px;}
+  .news-item-meta{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-dim);letter-spacing:0.04em;}
+  .news-loading{color:var(--ink-dim);font-size:14px;padding:24px;text-align:center;}
+  .news-error{color:var(--red);font-size:13px;padding:16px;background:var(--panel);border-radius:6px;border:1px solid var(--line);}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <span class="navbar-brand">RADAR B3</span>
+  <div class="navbar-links">
+    <button class="nav-btn active" onclick="showPage('cotacoes')">Cotações</button>
+    <button class="nav-btn" onclick="showPage('noticias')">Notícias</button>
+    <button class="nav-btn" onclick="showPage('opcoes')">Opções</button>
+    <button class="nav-btn" onclick="showPage('rendafixa')">Renda Fixa</button>
+    <button class="nav-btn" onclick="showPage('aluguel')">Aluguel</button>
+    <button class="nav-btn" onclick="showPage('fluxo')">Fluxo</button>
+  </div>
+</nav>
+
+<!-- PAGE: COTAÇÕES -->
+<div id="page-cotacoes" class="page active">
+
+<div class="tape-wrap">
+  <div class="tape" id="tape"></div>
+</div>
+
+<div style="max-width:880px;margin:0 auto;padding:16px 24px 0;">
+  <div class="eyebrow"><span class="dot" id="status-dot"></span>RADAR DE MERCADO · B3 · <span id="status-text">carregando cotações…</span></div>
+</div>
+
+<div id="sectors-container"></div>
+
+<div class="closing">
+  <p>Dados indicativos. Não constitui recomendação de compra ou venda — confira cotações em tempo real na sua corretora.</p>
+</div>
+
+</div><!-- /page-cotacoes -->
+
+<!-- PAGE: NOTÍCIAS -->
+<div id="page-noticias" class="page">
+  <div class="news-section">
+    <div class="news-source-block">
+      <div class="news-source-title">InfoMoney</div>
+      <div id="news-infomoney" class="news-list">
+        <div class="news-loading">Carregando manchetes…</div>
+      </div>
+    </div>
+    <div class="news-source-block">
+      <div class="news-source-title">Money Times</div>
+      <div id="news-moneytimes" class="news-list">
+        <div class="news-loading">Carregando manchetes…</div>
+      </div>
+    </div>
+  </div>
+</div><!-- /page-noticias -->
+
+<!-- PAGE: OPÇÕES -->
+<div id="page-opcoes" class="page">
+  <div class="news-section">
+
+    <div class="section-head" style="max-width:880px;margin:36px auto 0;padding:0 24px 12px;">
+      <h2>Opções</h2>
+      <span class="tag simpar">CALL &amp; PUT · opcoes.net.br</span>
+    </div>
+
+    <div style="max-width:880px;margin:0 auto;padding:8px 24px 20px;">
+      <p class="intro-text">Selecione um ativo para ver a cadeia de opções completa com prêmios em tempo real no opcoes.net.br — CALL e PUT, 3 vencimentos.</p>
+    </div>
+
+    <div style="max-width:880px;margin:0 auto;padding:0 24px 48px;">
+
+      <div class="news-source-title" style="margin-bottom:12px;">Bancos</div>
+      <div class="ticker-opt-grid">
+        <div class="ticker-opt bank-opt" onclick="selectOpcaoTicker(this,'BBAS3','Banco')">BBAS3</div>
+        <div class="ticker-opt bank-opt" onclick="selectOpcaoTicker(this,'BBDC4','Banco')">BBDC4</div>
+        <div class="ticker-opt bank-opt" onclick="selectOpcaoTicker(this,'ITUB4','Banco')">ITUB4</div>
+        <div class="ticker-opt bank-opt" onclick="selectOpcaoTicker(this,'SANB11','Banco')">SANB11</div>
+        <div class="ticker-opt bank-opt" onclick="selectOpcaoTicker(this,'BPAC11','Banco')">BPAC11</div>
+      </div>
+
+      <div class="news-source-title" style="margin-top:20px;margin-bottom:12px;">Grupo Simpar</div>
+      <div class="ticker-opt-grid">
+        <div class="ticker-opt simpar-opt" onclick="selectOpcaoTicker(this,'VAMO3','Locação')">VAMO3</div>
+        <div class="ticker-opt simpar-opt" onclick="selectOpcaoTicker(this,'MOVI3','RAC')">MOVI3</div>
+        <div class="ticker-opt simpar-opt" onclick="selectOpcaoTicker(this,'JSLG3','Logística')">JSLG3</div>
+        <div class="ticker-opt simpar-opt" onclick="selectOpcaoTicker(this,'SIMH3','Holding')">SIMH3</div>
+      </div>
+
+      <div class="news-source-title" style="margin-top:20px;margin-bottom:12px;">Petróleo & Energia</div>
+      <div class="ticker-opt-grid">
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'PETR4','Petróleo')">PETR4</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'PETR3','Petróleo')">PETR3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'PRIO3','Petróleo')">PRIO3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'VALE3','Mineração')">VALE3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'ELET3','Energia')">ELET3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'ENEV3','Energia')">ENEV3</div>
+      </div>
+
+      <div class="news-source-title" style="margin-top:20px;margin-bottom:12px;">Varejo & Consumo</div>
+      <div class="ticker-opt-grid">
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'MGLU3','Varejo')">MGLU3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'RENT3','Varejo')">RENT3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'LREN3','Varejo')">LREN3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'ASAI3','Varejo')">ASAI3</div>
+      </div>
+
+      <div class="news-source-title" style="margin-top:20px;margin-bottom:12px;">Transportes & Telecom</div>
+      <div class="ticker-opt-grid">
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'GOLL4','Aéreo')">GOLL4</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'AZUL4','Aéreo')">AZUL4</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'CCRO3','Concessão')">CCRO3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'VIVT3','Telecom')">VIVT3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'TIMS3','Telecom')">TIMS3</div>
+      </div>
+
+      <!-- Painel de vencimentos -->
+      <div id="opcao-panel" style="display:none;margin-top:28px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--gold);" id="opcao-ticker-label">—</div>
+            <div style="font-size:13px;color:var(--ink-dim);margin-top:4px;">Selecione o vencimento para abrir a cadeia completa</div>
+          </div>
+        </div>
+        <div id="opcao-venc-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+
+    </div>
+  </div>
+</div><!-- /page-opcoes -->
+
+<!-- PAGE: RENDA FIXA -->
+<div id="page-rendafixa" class="page">
+  <div class="news-section">
+
+    <div class="section-head" style="max-width:880px;margin:36px auto 0;padding:0 24px 12px;">
+      <h2>Renda Fixa</h2>
+      <span class="tag bank">Tesouro Direto</span>
+    </div>
+
+    <div style="max-width:880px;margin:0 auto;padding:8px 24px 0;">
+      <p class="intro-text">Títulos públicos disponíveis para compra hoje, com taxas atualizadas diariamente via brapi.dev. Clique em qualquer título para abrir no site oficial do Tesouro Direto.</p>
+    </div>
+
+    <!-- Filtros -->
+    <div style="max-width:880px;margin:16px auto 0;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="nav-btn active" id="filter-todos" onclick="filterBonds('todos')" style="border:1px solid var(--line);">Todos</button>
+      <button class="nav-btn" id="filter-selic" onclick="filterBonds('selic')" style="border:1px solid var(--line);">Tesouro Selic</button>
+      <button class="nav-btn" id="filter-ipca" onclick="filterBonds('ipca')" style="border:1px solid var(--line);">IPCA+</button>
+      <button class="nav-btn" id="filter-prefixado" onclick="filterBonds('prefixado')" style="border:1px solid var(--line);">Prefixado</button>
+    </div>
+
+    <!-- Tabela de títulos -->
+    <div style="max-width:880px;margin:20px auto;padding:0 24px 48px;">
+      <div id="treasury-loading" class="news-loading">Carregando títulos…</div>
+      <div id="treasury-error" style="display:none;" class="news-error"></div>
+      <div class="table-scroll" id="treasury-table-wrap" style="display:none;">
+        <table id="treasury-table">
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Vencimento</th>
+              <th>Taxa</th>
+              <th>Preço mín.</th>
+              <th>Tipo</th>
+            </tr>
+          </thead>
+          <tbody id="treasury-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CDB / LCA / LCI info -->
+    <div style="max-width:880px;margin:0 auto;padding:0 24px 48px;">
+      <div class="news-source-title">CDB · LCA · LCI — Taxas de referência (Banco Central)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="bcb-cards">
+        <div class="card">
+          <div class="ticker" style="font-size:15px;">CDB</div>
+          <div class="company">Certificado de Depósito Bancário</div>
+          <div class="price-row"><span class="price" style="font-size:18px;" id="bcb-cdi">—</span></div>
+          <div class="note">Referência: CDI (taxa overnight). CDBs de bancos médios costumam pagar 100–120% do CDI. Liquidez varia — verifique carência antes de investir.</div>
+        </div>
+        <div class="card">
+          <div class="ticker" style="font-size:15px;">LCA / LCI</div>
+          <div class="company">Letra de Crédito Agro / Imobiliário</div>
+          <div class="price-row"><span class="price" style="font-size:18px;" id="bcb-lca">Isento IR</span></div>
+          <div class="note">Isentas de IR para pessoa física. Rentabilidade bruta menor que CDB, mas líquida pode ser superior. Carência mínima de 9 meses (LCA) e 12 meses (LCI).</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /page-rendafixa -->
+
+<!-- PAGE: ALUGUEL -->
+<div id="page-aluguel" class="page">
+  <div class="news-section">
+
+    <div class="section-head" style="max-width:880px;margin:36px auto 0;padding:0 24px 12px;">
+      <h2>Ações Mais Alugadas</h2>
+      <span class="tag simpar">BTC · B3</span>
+    </div>
+
+    <div style="max-width:880px;margin:0 auto;padding:8px 24px 16px;">
+      <p class="intro-text">Ranking das ações com maior taxa de aluguel (doador) na B3. Taxas altas indicam forte interesse em operar vendido — útil para identificar papéis com posições short elevadas. Dados do boletim diário da B3, atualizados após o fechamento do mercado.</p>
+    </div>
+
+    <div style="max-width:880px;margin:0 auto;padding:0 24px;">
+      <div id="aluguel-loading" class="news-loading">Carregando dados de aluguel…</div>
+      <div id="aluguel-error" style="display:none;" class="news-error"></div>
+      <div id="aluguel-source" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-dim);margin-bottom:12px;display:none;"></div>
+      <div class="table-scroll" id="aluguel-table-wrap" style="display:none;">
+        <table id="aluguel-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Ticker</th>
+              <th>Taxa Doador</th>
+              <th>Taxa Tomador</th>
+              <th>% em Aluguel</th>
+              <th>Qtd. Contratos</th>
+            </tr>
+          </thead>
+          <tbody id="aluguel-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="max-width:880px;margin:24px auto 48px;padding:0 24px;">
+      <div class="note">Taxa Doador = remuneração recebida por quem empresta as ações. Taxa Tomador = custo total de quem aluga (inclui comissão da corretora). Quanto maior a taxa, mais caro está o aluguel — sinal de escassez de papéis disponíveis ou alta demanda por vendas a descoberto.</div>
+    </div>
+
+  </div>
+</div><!-- /page-aluguel -->
+
+<!-- PAGE: FLUXO -->
+<div id="page-fluxo" class="page">
+  <div class="news-section">
+    <div class="section-head" style="max-width:880px;margin:36px auto 0;padding:0 24px 12px;">
+      <h2>Fluxo de Investidores</h2>
+      <span class="tag bank">B3 · Diário</span>
+    </div>
+    <div style="max-width:880px;margin:0 auto;padding:8px 24px 20px;">
+      <p class="intro-text">Movimentação diária por tipo de investidor na B3. Valores em R$ milhões. Verde = entrada líquida, Vermelho = saída líquida.</p>
+      <a href="https://carteirafundos.com/investment-flow" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:10px 16px;background:var(--panel);border:1px solid var(--gold);border-radius:6px;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);transition:background .2s;">
+        Ver fluxo atualizado em tempo real ↗ carteirafundos.com
+      </a>
+    </div>
+
+    <!-- Cards resumo -->
+    <div style="max-width:880px;margin:0 auto;padding:0 24px 24px;">
+      <div class="grid" id="fluxo-summary" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));"></div>
+    </div>
+
+    <!-- Tabela histórica -->
+    <div style="max-width:880px;margin:0 auto;padding:0 24px 48px;">
+      <div id="fluxo-loading" class="news-loading">Carregando fluxo de investidores…</div>
+      <div id="fluxo-error" style="display:none;" class="news-error"></div>
+      <div id="fluxo-source" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-dim);margin-bottom:12px;display:none;"></div>
+      <div class="table-scroll" id="fluxo-table-wrap" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Estrangeiro</th>
+              <th>Institucional</th>
+              <th>Pessoa Física</th>
+              <th>Inst. Financeira</th>
+              <th>Outros</th>
+            </tr>
+          </thead>
+          <tbody id="fluxo-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div><!-- /page-fluxo -->
+
+<script>
+  // --- Navegação ---
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b => {
+      if (b.getAttribute('onclick').includes(id)) b.classList.add('active');
+    });
+    window.scrollTo(0, 0);
+    if (id === 'noticias') loadNews();
+    if (id === 'rendafixa') loadTreasury();
+    if (id === 'aluguel') loadAluguel();
+    if (id === 'fluxo') loadFluxo();
+  }
+
+  // --- Cotações ---
+  const SECTORS = {
+    'Bancos': ['BBAS3','BBDC4','ITUB4','SANB11','BPAC11','BMGB4'],
+    'Grupo Simpar': ['VAMO3','MOVI3','JSLG3','SIMH3'],
+    'Petróleo & Energia': ['PETR3','PETR4','PRIO3','RECV3','CSAN3','EGIE3','ENEV3','CPFE3','CMIG4','ELET3'],
+    'Mineração & Siderurgia': ['VALE3','CSNA3','GGBR4','USIM5'],
+    'Varejo & Consumo': ['MGLU3','RENT3','LREN3','PCAR3','ASAI3','CRFB3'],
+    'Telecom': ['VIVT3','TIMS3'],
+    'Transportes': ['GOLL4','AZUL4','CCRO3','ECOR3','RAIL3'],
+  };
+
+  const SECTOR_TAG = {
+    'Bancos': 'bank',
+    'Grupo Simpar': 'simpar',
+    'Petróleo & Energia': 'simpar',
+    'Mineração & Siderurgia': 'bank',
+    'Varejo & Consumo': 'simpar',
+    'Telecom': 'bank',
+    'Transportes': 'simpar',
+  };
+
+  const FALLBACK = [
+    {ticker:'BBAS3',price:20.26,changePercent:-0.25},
+    {ticker:'BBDC4',price:18.00,changePercent:2.16},
+    {ticker:'ITUB4',price:42.35,changePercent:1.56},
+    {ticker:'SANB11',price:27.45,changePercent:0.88},
+    {ticker:'BPAC11',price:null,changePercent:null},
+    {ticker:'BMGB4',price:null,changePercent:null},
+    {ticker:'VAMO3',price:2.88,changePercent:-1.37},
+    {ticker:'MOVI3',price:14.75,changePercent:1.52},
+    {ticker:'JSLG3',price:null,changePercent:null},
+    {ticker:'SIMH3',price:8.07,changePercent:2.54},
+    {ticker:'PETR3',price:null,changePercent:null},
+    {ticker:'PETR4',price:null,changePercent:null},
+    {ticker:'PRIO3',price:null,changePercent:null},
+    {ticker:'RECV3',price:null,changePercent:null},
+    {ticker:'CSAN3',price:null,changePercent:null},
+    {ticker:'EGIE3',price:null,changePercent:null},
+    {ticker:'ENEV3',price:null,changePercent:null},
+    {ticker:'CPFE3',price:null,changePercent:null},
+    {ticker:'CMIG4',price:null,changePercent:null},
+    {ticker:'ELET3',price:null,changePercent:null},
+    {ticker:'VALE3',price:null,changePercent:null},
+    {ticker:'CSNA3',price:null,changePercent:null},
+    {ticker:'GGBR4',price:null,changePercent:null},
+    {ticker:'USIM5',price:null,changePercent:null},
+    {ticker:'MGLU3',price:null,changePercent:null},
+    {ticker:'RENT3',price:null,changePercent:null},
+    {ticker:'LREN3',price:null,changePercent:null},
+    {ticker:'PCAR3',price:null,changePercent:null},
+    {ticker:'ASAI3',price:null,changePercent:null},
+    {ticker:'CRFB3',price:null,changePercent:null},
+    {ticker:'VIVT3',price:null,changePercent:null},
+    {ticker:'TIMS3',price:null,changePercent:null},
+    {ticker:'GOLL4',price:null,changePercent:null},
+    {ticker:'AZUL4',price:null,changePercent:null},
+    {ticker:'CCRO3',price:null,changePercent:null},
+    {ticker:'ECOR3',price:null,changePercent:null},
+    {ticker:'RAIL3',price:null,changePercent:null},
+  ];
+  function fmtPrice(p){ return p==null?'—':'R$ '+p.toFixed(2).replace('.',','); }
+  function fmtVar(v){ if(v==null)return'—'; return(v>=0?'▲ ':'▼ ')+Math.abs(v).toFixed(2)+'%'; }
+
+  function renderTape(list){
+    const row=list.map(i=>`<span class="tape-item"><b>${i.ticker}</b> ${fmtPrice(i.price)} <span class="${(i.changePercent||0)>=0?'up':'down'}">${fmtVar(i.changePercent)}</span></span>`).join('');
+    document.getElementById('tape').innerHTML=row+row;
+  }
+
+  function buildSectors(list){
+    const byTicker = {};
+    list.forEach(i => byTicker[i.ticker] = i);
+    const container = document.getElementById('sectors-container');
+    container.innerHTML = Object.entries(SECTORS).map(([sector, tickers]) => {
+      const tag = SECTOR_TAG[sector] || 'bank';
+      const cards = tickers.map(ticker => {
+        const q = byTicker[ticker] || {ticker, price:null, changePercent:null};
+        const isUp = (q.changePercent||0) >= 0;
+        return `<div class="card">
+          <div class="card-top">
+            <span class="ticker">${ticker}</span>
+            <span class="tag ${tag}">${sector==='Grupo Simpar'?'Simpar':sector==='Bancos'?'Banco':sector.split(' ')[0]}</span>
+          </div>
+          <div class="price-row">
+            <span class="price" id="price-${ticker}">${fmtPrice(q.price)}</span>
+            <span class="var ${isUp?'up':'down'}" id="var-${ticker}">${fmtVar(q.changePercent)}</span>
+          </div>
+        </div>`;
+      }).join('');
+      return `<section>
+        <div class="section-head">
+          <h2>${sector}</h2>
+          <span class="tag ${tag}">${tag==='bank'?'Bovespa':'Grupo'}</span>
+        </div>
+        <div class="grid">${cards}</div>
+      </section>`;
+    }).join('');
+  }
+
+  function updateCards(list){
+    list.forEach(i=>{
+      const pe=document.getElementById('price-'+i.ticker);
+      const ve=document.getElementById('var-'+i.ticker);
+      if(pe&&i.price!=null) pe.textContent=fmtPrice(i.price);
+      if(ve&&i.changePercent!=null){
+        ve.textContent=fmtVar(i.changePercent);
+        ve.className='var '+(i.changePercent>=0?'up':'down');
+      }
+      if(i.ticker==='VAMO3'){
+        const spot=document.getElementById('price-opcoes-spot');
+        if(spot&&i.price!=null) spot.textContent=fmtPrice(i.price);
+      }
+    });
+  }
+  function setStatus(text,live){
+    document.getElementById('status-text').textContent=text;
+    document.getElementById('status-dot').style.background=live?'var(--green)':'var(--gold)';
+  }
+  async function loadQuotes(){
+    try{
+      const resp=await fetch('/api/quotes');
+      const json=await resp.json();
+      if(!resp.ok||json.error) throw new Error(json.message||'erro');
+      renderTape(json.quotes);
+      buildSectors(json.quotes);
+      updateCards(json.quotes);
+      const now=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      setStatus('ao vivo via brapi.dev · '+now,true);
+    }catch(err){
+      renderTape(FALLBACK);
+      buildSectors(FALLBACK);
+      setStatus('dados estáticos',false);
+    }
+  }
+  loadQuotes();
+  setInterval(loadQuotes,60000);
+
+  // --- Renda Fixa ---
+  let allBonds = [];
+  let bondsLoaded = false;
+
+  async function loadTreasury() {
+    if (bondsLoaded) return;
+    try {
+      const resp = await fetch('/api/treasury');
+      const json = await resp.json();
+      if (!resp.ok || json.error) throw new Error(json.message || 'erro');
+      allBonds = json.bonds.filter(b => b.available);
+      renderBonds('todos');
+      bondsLoaded = true;
+      document.getElementById('treasury-loading').style.display = 'none';
+      document.getElementById('treasury-table-wrap').style.display = 'block';
+      loadCDI();
+    } catch (err) {
+      document.getElementById('treasury-loading').style.display = 'none';
+      const errEl = document.getElementById('treasury-error');
+      errEl.style.display = 'block';
+      errEl.textContent = 'Não foi possível carregar os títulos: ' + err.message;
+    }
+  }
+
+  function filterBonds(type) {
+    document.querySelectorAll('[id^="filter-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById('filter-' + type).classList.add('active');
+    renderBonds(type);
+  }
+
+  function renderBonds(type) {
+    const filtered = type === 'todos' ? allBonds : allBonds.filter(b => b.type === type);
+    const tbody = document.getElementById('treasury-tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--ink-dim);text-align:center;padding:24px;">Nenhum título disponível nessa categoria.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(b => {
+      const rate = b.sellRate != null ? (b.sellRate * 100).toFixed(2) + '% a.a.' : '—';
+      const price = b.minInvestment != null ? 'R$ ' + b.minInvestment.toFixed(2).replace('.', ',') : '—';
+      const mat = b.maturityDate ? new Date(b.maturityDate).toLocaleDateString('pt-BR') : '—';
+      const typeLabel = {selic:'Selic',ipca:'IPCA+',prefixado:'Prefixado','renda+':'Renda+','educa+':'Educa+',outros:'Outros'}[b.type] || b.type;
+      const typeColor = {selic:'var(--green)',ipca:'var(--gold)',prefixado:'var(--bank)','renda+':'var(--simpar)','educa+':'var(--simpar)'}[b.type] || 'var(--ink-dim)';
+      return `<tr class="row-bank">
+        <td class="tk"><a href="https://www.tesourodireto.com.br/titulos-publicos/conheca-os-titulos.htm" target="_blank" rel="noopener" style="color:var(--ink);text-decoration:none;">${b.name}</a></td>
+        <td>${mat}</td>
+        <td style="color:var(--green);font-weight:600;">${rate}</td>
+        <td>${price}</td>
+        <td><span style="color:${typeColor};font-size:11px;font-weight:600;">${typeLabel}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function loadCDI() {
+    try {
+      const resp = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados/ultimos/1?formato=json');
+      const json = await resp.json();
+      if (json && json[0]) {
+        const cdi = parseFloat(json[0].valor.replace(',', '.'));
+        document.getElementById('bcb-cdi').textContent = cdi.toFixed(2) + '% a.a. (CDI)';
+      }
+    } catch (e) { /* silencioso */ }
+  }
+
+  // --- Opções ---
+  const VENCIMENTOS_OPT = [
+    { label: 'AGO / 26', date: '2026-08-21', dias: 43 },
+    { label: 'SET / 26', date: '2026-09-18', dias: 71 },
+    { label: 'OUT / 26', date: '2026-10-16', dias: 99 },
+  ];
+
+  function selectOpcaoTicker(el, ticker, setor) {
+    document.querySelectorAll('.ticker-opt').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('opcao-ticker-label').textContent = ticker + ' · ' + setor;
+    document.getElementById('opcao-venc-list').innerHTML = VENCIMENTOS_OPT.map(v => `
+      <a class="venc-link" href="https://opcoes.net.br/opcoes/bovespa/${ticker}?vencimento=${v.date}" target="_blank" rel="noopener">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px;">${v.label} · ${v.date.split('-').reverse().join('/')}</div>
+          <div style="font-size:12px;color:var(--ink-dim);">${v.dias} dias até o vencimento · CALL e PUT</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--green);border:1px solid var(--green);padding:3px 8px;border-radius:3px;">CALL</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--red);border:1px solid var(--red);padding:3px 8px;border-radius:3px;">PUT</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);">Ver cadeia ↗</span>
+        </div>
+      </a>
+    `).join('');
+    document.getElementById('opcao-panel').style.display = 'block';
+    document.getElementById('opcao-panel').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  // --- Aluguel ---
+  let aluguelLoaded = false;
+
+  async function loadAluguel() {
+    if (aluguelLoaded) return;
+    try {
+      const resp = await fetch('/api/aluguel');
+      const json = await resp.json();
+      if (!resp.ok || json.error) throw new Error(json.message || 'erro');
+
+      const sourceEl = document.getElementById('aluguel-source');
+      sourceEl.style.display = 'block';
+      sourceEl.textContent = json.source === 'fallback'
+        ? '⚠ Dados de referência (boletim B3 indisponível no momento)'
+        : `Fonte: B3 Boletim Diário · ${json.date}`;
+
+      const tbody = document.getElementById('aluguel-tbody');
+      tbody.innerHTML = json.items.map((item, i) => {
+        const taxa = parseFloat(item.taxaDoador.replace(',', '.')) || 0;
+        const color = taxa >= 30 ? 'var(--red)' : taxa >= 15 ? 'var(--simpar)' : taxa >= 8 ? 'var(--gold)' : 'var(--green)';
+        const isMine = ['VAMO3','MOVI3','JSLG3','SIMH3','BBAS3','BBDC4','ITUB4','SANB11'].includes(item.ticker);
+        return `<tr class="${isMine ? 'row-simpar' : ''}">
+          <td style="color:var(--ink-dim);">${i + 1}</td>
+          <td class="tk">${item.ticker}${isMine ? ' <span style="font-size:10px;color:var(--gold);">★</span>' : ''}</td>
+          <td style="color:${color};font-weight:600;">${item.taxaDoador}% a.a.</td>
+          <td style="color:var(--ink-dim);">${item.taxaTomador}% a.a.</td>
+          <td style="color:var(--gold);font-weight:600;">${item.pctAluguel ? item.pctAluguel + '%' : '—'}</td>
+          <td style="color:var(--ink-dim);">${Number(String(item.quantidade).replace(/\./g,'')).toLocaleString('pt-BR')}</td>
+        </tr>`;
+      }).join('');
+
+      document.getElementById('aluguel-loading').style.display = 'none';
+      document.getElementById('aluguel-table-wrap').style.display = 'block';
+      aluguelLoaded = true;
+    } catch (err) {
+      document.getElementById('aluguel-loading').style.display = 'none';
+      const errEl = document.getElementById('aluguel-error');
+      errEl.style.display = 'block';
+      errEl.textContent = 'Não foi possível carregar os dados: ' + err.message;
+    }
+  }
+
+  // --- Fluxo de Investidores ---
+  let fluxoLoaded = false;
+
+  function fmtFluxo(v) {
+    if (v == null) return '—';
+    const abs = Math.abs(v).toFixed(1);
+    const sign = v >= 0 ? '+' : '-';
+    const color = v >= 0 ? 'var(--green)' : 'var(--red)';
+    return `<span style="color:${color};font-weight:600;">${sign}${abs}</span>`;
+  }
+
+  async function loadFluxo() {
+    if (fluxoLoaded) return;
+    try {
+      const resp = await fetch('/api/fluxo');
+      const json = await resp.json();
+      if (!resp.ok || json.error) throw new Error(json.message || 'erro');
+
+      const flows = json.flows;
+
+      // Cards de resumo (último dia disponível)
+      const last = flows[0];
+      if (last) {
+        const cats = [
+          { label: 'Estrangeiro', key: 'foreign', val: last.foreign },
+          { label: 'Institucional', key: 'institutional', val: last.institutional },
+          { label: 'Pessoa Física', key: 'individual', val: last.individual },
+          { label: 'Inst. Financeira', key: 'financial', val: last.financial },
+          { label: 'Outros', key: 'other', val: last.other },
+        ];
+        document.getElementById('fluxo-summary').innerHTML = cats.map(c => {
+          const up = (c.val || 0) >= 0;
+          return `<div class="card" style="text-align:center;">
+            <div class="stat-label" style="margin-bottom:8px;">${c.label}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;color:${up?'var(--green)':'var(--red)'};">
+              ${c.val >= 0 ? '+' : ''}${(c.val||0).toFixed(1)}
+            </div>
+            <div style="font-size:10px;color:var(--ink-dim);margin-top:4px;">R$ mi · ${last.date||''}</div>
+          </div>`;
+        }).join('');
+      }
+
+      // Tabela histórica
+      document.getElementById('fluxo-tbody').innerHTML = flows.map(f => `
+        <tr>
+          <td style="color:var(--ink-dim);">${f.date||'—'}</td>
+          <td>${fmtFluxo(f.foreign)}</td>
+          <td>${fmtFluxo(f.institutional)}</td>
+          <td>${fmtFluxo(f.individual)}</td>
+          <td>${fmtFluxo(f.financial)}</td>
+          <td>${fmtFluxo(f.other)}</td>
+        </tr>
+      `).join('');
+
+      const srcEl = document.getElementById('fluxo-source');
+      srcEl.style.display = 'block';
+      srcEl.textContent = json.source === 'fallback'
+        ? '⚠ Dados de referência (API indisponível)'
+        : 'Fonte: dadosdemercado.com.br · últimos 30 dias';
+
+      document.getElementById('fluxo-loading').style.display = 'none';
+      document.getElementById('fluxo-table-wrap').style.display = 'block';
+      fluxoLoaded = true;
+    } catch (err) {
+      document.getElementById('fluxo-loading').style.display = 'none';
+      const errEl = document.getElementById('fluxo-error');
+      errEl.style.display = 'block';
+      errEl.textContent = 'Não foi possível carregar o fluxo: ' + err.message;
+    }
+  }
+
+  let newsLoaded = false;
+  async function loadNews(){
+    if(newsLoaded) return;
+    try{
+      const resp = await fetch('/api/news');
+      const json = await resp.json();
+      if(!resp.ok||json.error) throw new Error(json.message||'erro ao buscar notícias');
+      const im = json.news.filter(n=>n.source==='InfoMoney');
+      const mt = json.news.filter(n=>n.source==='Money Times');
+      renderNews('news-infomoney', im);
+      renderNews('news-moneytimes', mt);
+      newsLoaded = true;
+    }catch(err){
+      document.getElementById('news-infomoney').innerHTML=`<div class="news-error">Não foi possível carregar as notícias: ${err.message}</div>`;
+      document.getElementById('news-moneytimes').innerHTML='';
+    }
+  }
+  function renderNews(elId, items){
+    const el = document.getElementById(elId);
+    if(!items.length){
+      el.innerHTML='<div class="news-loading">Nenhuma notícia encontrada.</div>';
+      return;
+    }
+    el.innerHTML = items.map(n=>`
+      <a class="news-item" href="${n.link}" target="_blank" rel="noopener">
+        <div class="news-item-title">${n.title}</div>
+        ${n.description?`<div class="news-item-desc">${n.description}…</div>`:''}
+        <div class="news-item-meta">${n.source} · ${n.pubDate?new Date(n.pubDate).toLocaleDateString('pt-BR'):''}</div>
+      </a>
+    `).join('');
+  }
+</script>
+</body>
+</html>
