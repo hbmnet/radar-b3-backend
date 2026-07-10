@@ -350,40 +350,36 @@
 <!-- PAGE: FLUXO -->
 <div id="page-fluxo" class="page">
   <div class="news-section">
+
     <div class="section-head" style="max-width:880px;margin:36px auto 0;padding:0 24px 12px;">
       <h2>Fluxo de Investidores</h2>
       <span class="tag bank">B3 · Diário</span>
     </div>
-    <div style="max-width:880px;margin:0 auto;padding:8px 24px 20px;">
-      <p class="intro-text">Movimentação diária por tipo de investidor na B3. Valores em R$ milhões. Verde = entrada líquida, Vermelho = saída líquida. Fonte: dadosdemercado.com.br</p>
-    </div>
 
-    <!-- Cards resumo -->
-    <div style="max-width:880px;margin:0 auto;padding:0 24px 24px;">
-      <div class="grid" id="fluxo-summary" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));"></div>
-    </div>
+    <div style="max-width:880px;margin:0 auto;padding:16px 24px 48px;">
+      <p class="intro-text">Movimentação diária por tipo de investidor na B3 — Estrangeiro, Institucional, Pessoa Física, Inst. Financeira e Outros. Clique abaixo para ver os dados atualizados em tempo real.</p>
 
-    <!-- Tabela histórica -->
-    <div style="max-width:880px;margin:0 auto;padding:0 24px 48px;">
-      <div id="fluxo-loading" class="news-loading">Carregando fluxo de investidores…</div>
-      <div id="fluxo-error" style="display:none;" class="news-error"></div>
-      <div id="fluxo-source" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-dim);margin-bottom:12px;display:none;"></div>
-      <div class="table-scroll" id="fluxo-table-wrap" style="display:none;">
-        <table>
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Estrangeiro</th>
-              <th>Institucional</th>
-              <th>Pessoa Física</th>
-              <th>Inst. Financeira</th>
-              <th>Outros</th>
-            </tr>
-          </thead>
-          <tbody id="fluxo-tbody"></tbody>
-        </table>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:24px;">
+        <a href="https://carteirafundos.com/investment-flow" target="_blank" rel="noopener" class="news-item" style="text-decoration:none;">
+          <div class="news-item-title">Fluxo de Investimento B3 — Carteira Fundos</div>
+          <div class="news-item-desc">Saldos diários e acumulados por tipo de investidor: Estrangeiro, Institucional e Pessoa Física. Histórico completo atualizado diariamente.</div>
+          <div class="news-item-meta">carteirafundos.com ↗</div>
+        </a>
+
+        <a href="https://www.dadosdemercado.com.br/fluxo" target="_blank" rel="noopener" class="news-item" style="text-decoration:none;">
+          <div class="news-item-title">Fluxo de Investimento B3 — Dados de Mercado</div>
+          <div class="news-item-desc">Histórico desde 2010. Gráfico de barras com média móvel de 28 períodos. Dados atualizados conforme divulgação da B3.</div>
+          <div class="news-item-meta">dadosdemercado.com.br ↗</div>
+        </a>
+
+        <a href="https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/consultas/mercado-a-vista/dados-de-mercado/" target="_blank" rel="noopener" class="news-item" style="text-decoration:none;">
+          <div class="news-item-title">Dados de Mercado Oficial — B3</div>
+          <div class="news-item-desc">Fonte primária oficial. Planilha de participação de investidores publicada diretamente pela B3, com dados de compra, venda e saldo líquido.</div>
+          <div class="news-item-meta">b3.com.br ↗</div>
+        </a>
       </div>
     </div>
+
   </div>
 </div><!-- /page-fluxo -->
 
