@@ -109,6 +109,7 @@
     <button class="nav-btn" onclick="showPage('opcoes')">Opções</button>
     <button class="nav-btn" onclick="showPage('rendafixa')">Renda Fixa</button>
     <button class="nav-btn" onclick="showPage('aluguel')">Aluguel</button>
+    <button class="nav-btn" onclick="showPage('fluxo')">Fluxo</button>
   </div>
 </nav>
 
@@ -119,11 +120,9 @@
   <div class="tape" id="tape"></div>
 </div>
 
-<header class="hero">
+<div style="max-width:880px;margin:0 auto;padding:16px 24px 0;">
   <div class="eyebrow"><span class="dot" id="status-dot"></span>RADAR DE MERCADO · B3 · <span id="status-text">carregando cotações…</span></div>
-  <h1>Dois motores da bolsa <em>brasileira</em></h1>
-  <p class="lede">Os quatro grandes bancos vs. as três pernas operacionais do Grupo Simpar — Vamos, Movida e JSL — sob a holding SIMPAR (SIMH3).</p>
-</header>
+</div>
 
 <div id="sectors-container"></div>
 
@@ -354,6 +353,46 @@
   </div>
 </div><!-- /page-aluguel -->
 
+<!-- PAGE: FLUXO -->
+<div id="page-fluxo" class="page">
+  <div class="news-section">
+    <div class="section-head" style="max-width:880px;margin:36px auto 0;padding:0 24px 12px;">
+      <h2>Fluxo de Investidores</h2>
+      <span class="tag bank">B3 · Diário</span>
+    </div>
+    <div style="max-width:880px;margin:0 auto;padding:8px 24px 20px;">
+      <p class="intro-text">Movimentação diária por tipo de investidor na B3. Valores em R$ milhões. Verde = entrada líquida, Vermelho = saída líquida. Fonte: dadosdemercado.com.br</p>
+    </div>
+
+    <!-- Cards resumo -->
+    <div style="max-width:880px;margin:0 auto;padding:0 24px 24px;">
+      <div class="grid" id="fluxo-summary" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));"></div>
+    </div>
+
+    <!-- Tabela histórica -->
+    <div style="max-width:880px;margin:0 auto;padding:0 24px 48px;">
+      <div id="fluxo-loading" class="news-loading">Carregando fluxo de investidores…</div>
+      <div id="fluxo-error" style="display:none;" class="news-error"></div>
+      <div id="fluxo-source" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-dim);margin-bottom:12px;display:none;"></div>
+      <div class="table-scroll" id="fluxo-table-wrap" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Estrangeiro</th>
+              <th>Institucional</th>
+              <th>Pessoa Física</th>
+              <th>Inst. Financeira</th>
+              <th>Outros</th>
+            </tr>
+          </thead>
+          <tbody id="fluxo-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div><!-- /page-fluxo -->
+
 <script>
   // --- Navegação ---
   function showPage(id) {
@@ -367,6 +406,7 @@
     if (id === 'noticias') loadNews();
     if (id === 'rendafixa') loadTreasury();
     if (id === 'aluguel') loadAluguel();
+    if (id === 'fluxo') loadFluxo();
   }
 
   // --- Cotações ---
@@ -608,6 +648,77 @@
       const errEl = document.getElementById('aluguel-error');
       errEl.style.display = 'block';
       errEl.textContent = 'Não foi possível carregar os dados: ' + err.message;
+    }
+  }
+
+  // --- Fluxo de Investidores ---
+  let fluxoLoaded = false;
+
+  function fmtFluxo(v) {
+    if (v == null) return '—';
+    const abs = Math.abs(v).toFixed(1);
+    const sign = v >= 0 ? '+' : '-';
+    const color = v >= 0 ? 'var(--green)' : 'var(--red)';
+    return `<span style="color:${color};font-weight:600;">${sign}${abs}</span>`;
+  }
+
+  async function loadFluxo() {
+    if (fluxoLoaded) return;
+    try {
+      const resp = await fetch('/api/fluxo');
+      const json = await resp.json();
+      if (!resp.ok || json.error) throw new Error(json.message || 'erro');
+
+      const flows = json.flows;
+
+      // Cards de resumo (último dia disponível)
+      const last = flows[0];
+      if (last) {
+        const cats = [
+          { label: 'Estrangeiro', key: 'foreign', val: last.foreign },
+          { label: 'Institucional', key: 'institutional', val: last.institutional },
+          { label: 'Pessoa Física', key: 'individual', val: last.individual },
+          { label: 'Inst. Financeira', key: 'financial', val: last.financial },
+          { label: 'Outros', key: 'other', val: last.other },
+        ];
+        document.getElementById('fluxo-summary').innerHTML = cats.map(c => {
+          const up = (c.val || 0) >= 0;
+          return `<div class="card" style="text-align:center;">
+            <div class="stat-label" style="margin-bottom:8px;">${c.label}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;color:${up?'var(--green)':'var(--red)'};">
+              ${c.val >= 0 ? '+' : ''}${(c.val||0).toFixed(1)}
+            </div>
+            <div style="font-size:10px;color:var(--ink-dim);margin-top:4px;">R$ mi · ${last.date||''}</div>
+          </div>`;
+        }).join('');
+      }
+
+      // Tabela histórica
+      document.getElementById('fluxo-tbody').innerHTML = flows.map(f => `
+        <tr>
+          <td style="color:var(--ink-dim);">${f.date||'—'}</td>
+          <td>${fmtFluxo(f.foreign)}</td>
+          <td>${fmtFluxo(f.institutional)}</td>
+          <td>${fmtFluxo(f.individual)}</td>
+          <td>${fmtFluxo(f.financial)}</td>
+          <td>${fmtFluxo(f.other)}</td>
+        </tr>
+      `).join('');
+
+      const srcEl = document.getElementById('fluxo-source');
+      srcEl.style.display = 'block';
+      srcEl.textContent = json.source === 'fallback'
+        ? '⚠ Dados de referência (API indisponível)'
+        : 'Fonte: dadosdemercado.com.br · últimos 30 dias';
+
+      document.getElementById('fluxo-loading').style.display = 'none';
+      document.getElementById('fluxo-table-wrap').style.display = 'block';
+      fluxoLoaded = true;
+    } catch (err) {
+      document.getElementById('fluxo-loading').style.display = 'none';
+      const errEl = document.getElementById('fluxo-error');
+      errEl.style.display = 'block';
+      errEl.textContent = 'Não foi possível carregar o fluxo: ' + err.message;
     }
   }
 
