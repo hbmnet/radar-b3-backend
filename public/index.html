@@ -84,6 +84,25 @@
   .closing p{color:var(--ink-dim);font-size:12px;max-width:62ch;margin-bottom:8px;}
   .closing .signature{font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:var(--ink);margin-bottom:14px;}
 
+  /* Opções ticker grid */
+  .ticker-opt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:4px;}
+  .ticker-opt{
+    background:var(--panel);border:1px solid var(--line);border-radius:6px;
+    padding:12px 8px;text-align:center;cursor:pointer;
+    font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;
+    color:var(--ink);transition:border-color .15s,background .15s,transform .15s;
+  }
+  .ticker-opt:hover{border-color:var(--gold);background:var(--panel-2);transform:translateY(-1px);}
+  .ticker-opt.active{border-color:var(--gold);background:var(--panel-2);}
+  .ticker-opt.bank-opt{border-top:2px solid var(--bank);}
+  .ticker-opt.simpar-opt{border-top:2px solid var(--simpar);}
+  .venc-link{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px 16px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:6px;text-decoration:none;transition:border-color .2s;flex-wrap:wrap;gap:8px;
+  }
+  .venc-link:hover{border-color:var(--gold);}
+
   /* News */
   .news-section{max-width:880px;margin:0 auto;padding:36px 24px;}
   .news-source-block{margin-bottom:40px;}
@@ -155,97 +174,72 @@
   <div class="news-section">
 
     <div class="section-head" style="max-width:880px;margin:36px auto 0;padding:0 24px 12px;">
-      <h2>Opções — VAMO3</h2>
-      <span class="tag simpar">CALL &amp; PUT</span>
+      <h2>Opções</h2>
+      <span class="tag simpar">CALL &amp; PUT · opcoes.net.br</span>
     </div>
 
-    <div style="max-width:880px;margin:0 auto;padding:8px 24px 0;">
-      <p class="intro-text">Cadeia de opções da Vamos (VAMO3) no intervalo de strike R$ 2,70 a R$ 4,00, para os 3 próximos vencimentos. Clique em cada vencimento para abrir a cadeia completa com prêmios atualizados em tempo real no opcoes.net.br.</p>
+    <div style="max-width:880px;margin:0 auto;padding:8px 24px 20px;">
+      <p class="intro-text">Selecione um ativo para ver a cadeia de opções completa com prêmios em tempo real no opcoes.net.br — CALL e PUT, 3 vencimentos.</p>
     </div>
 
-    <!-- Card spot price -->
-    <div style="max-width:880px;margin:16px auto;padding:0 24px;">
-      <div class="card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-        <div>
-          <div class="ticker">VAMO3</div>
-          <div class="company">Vamos Locação de Caminhões, Máquinas e Equipamentos</div>
-        </div>
-        <div style="text-align:right;">
-          <div class="price" id="price-opcoes-spot">R$ 2,88</div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-dim);margin-top:4px;">Preço spot atual</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Vencimentos -->
-    <div style="max-width:880px;margin:0 auto;padding:16px 24px;display:flex;flex-direction:column;gap:14px;">
-
-      <!-- AGO/26 -->
-      <a class="news-item" href="https://opcoes.net.br/opcoes/bovespa/VAMO3?vencimento=2026-08-21&strikeDe=2.70&strikeAte=4.00" target="_blank" rel="noopener" style="text-decoration:none;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
-          <div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:var(--gold);margin-bottom:6px;">AGO / 26 — 21/08/2026</div>
-            <div class="news-item-desc">Vencimento mais próximo. Opções com menor tempo extrínseco — maior sensibilidade ao preço spot. Strikes de R$ 2,70 a R$ 4,00.</div>
-            <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;">
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--green);">● CALL disponível</span>
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--red);">● PUT disponível</span>
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-dim);">Americana · Bovespa</span>
-            </div>
-          </div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:0.04em;white-space:nowrap;">Ver cadeia ↗</div>
-        </div>
-      </a>
-
-      <!-- SET/26 -->
-      <a class="news-item" href="https://opcoes.net.br/opcoes/bovespa/VAMO3?vencimento=2026-09-18&strikeDe=2.70&strikeAte=4.00" target="_blank" rel="noopener" style="text-decoration:none;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
-          <div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:var(--gold);margin-bottom:6px;">SET / 26 — 18/09/2026</div>
-            <div class="news-item-desc">Vencimento intermediário. Equilíbrio entre valor temporal e custo do prêmio. Bom para estratégias de venda coberta de médio prazo.</div>
-            <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;">
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--green);">● CALL disponível</span>
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--red);">● PUT disponível</span>
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-dim);">Americana · Bovespa</span>
-            </div>
-          </div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:0.04em;white-space:nowrap;">Ver cadeia ↗</div>
-        </div>
-      </a>
-
-      <!-- OUT/26 -->
-      <a class="news-item" href="https://opcoes.net.br/opcoes/bovespa/VAMO3?vencimento=2026-10-16&strikeDe=2.70&strikeAte=4.00" target="_blank" rel="noopener" style="text-decoration:none;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
-          <div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:var(--gold);margin-bottom:6px;">OUT / 26 — 16/10/2026</div>
-            <div class="news-item-desc">Vencimento mais longo dos três. Maior valor temporal — prêmios mais altos, mais tempo para o ativo se mover a favor.</div>
-            <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;">
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--green);">● CALL disponível</span>
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--red);">● PUT disponível</span>
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-dim);">Americana · Bovespa</span>
-            </div>
-          </div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:0.04em;white-space:nowrap;">Ver cadeia ↗</div>
-        </div>
-      </a>
-
-    </div>
-
-    <!-- Referência de strikes -->
     <div style="max-width:880px;margin:0 auto;padding:0 24px 48px;">
-      <div class="news-source-title" style="margin-top:24px;">Strikes monitorados — R$ 2,70 a R$ 4,00</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;">
-        <div style="background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:10px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;">R$ 2,70</div>
-        <div style="background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:10px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;">R$ 2,80</div>
-        <div style="background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:10px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;">R$ 2,90</div>
-        <div style="background:var(--panel);border:1px solid var(--simpar);border-radius:4px;padding:10px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--simpar);">R$ 3,00</div>
-        <div style="background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:10px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;">R$ 3,20</div>
-        <div style="background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:10px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;">R$ 3,50</div>
-        <div style="background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:10px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;">R$ 3,70</div>
-        <div style="background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:10px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;">R$ 4,00</div>
-      </div>
-      <div class="note" style="margin-top:16px;">Strike destacado em laranja = ATM aproximado com base no preço spot atual. Confira a liquidez de cada série antes de operar — opções de VAMO3 podem ter baixo volume em strikes mais distantes do dinheiro.</div>
-    </div>
 
+      <div class="news-source-title" style="margin-bottom:12px;">Bancos</div>
+      <div class="ticker-opt-grid">
+        <div class="ticker-opt bank-opt" onclick="selectOpcaoTicker(this,'BBAS3','Banco')">BBAS3</div>
+        <div class="ticker-opt bank-opt" onclick="selectOpcaoTicker(this,'BBDC4','Banco')">BBDC4</div>
+        <div class="ticker-opt bank-opt" onclick="selectOpcaoTicker(this,'ITUB4','Banco')">ITUB4</div>
+        <div class="ticker-opt bank-opt" onclick="selectOpcaoTicker(this,'SANB11','Banco')">SANB11</div>
+        <div class="ticker-opt bank-opt" onclick="selectOpcaoTicker(this,'BPAC11','Banco')">BPAC11</div>
+      </div>
+
+      <div class="news-source-title" style="margin-top:20px;margin-bottom:12px;">Grupo Simpar</div>
+      <div class="ticker-opt-grid">
+        <div class="ticker-opt simpar-opt" onclick="selectOpcaoTicker(this,'VAMO3','Locação')">VAMO3</div>
+        <div class="ticker-opt simpar-opt" onclick="selectOpcaoTicker(this,'MOVI3','RAC')">MOVI3</div>
+        <div class="ticker-opt simpar-opt" onclick="selectOpcaoTicker(this,'JSLG3','Logística')">JSLG3</div>
+        <div class="ticker-opt simpar-opt" onclick="selectOpcaoTicker(this,'SIMH3','Holding')">SIMH3</div>
+      </div>
+
+      <div class="news-source-title" style="margin-top:20px;margin-bottom:12px;">Petróleo & Energia</div>
+      <div class="ticker-opt-grid">
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'PETR4','Petróleo')">PETR4</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'PETR3','Petróleo')">PETR3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'PRIO3','Petróleo')">PRIO3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'VALE3','Mineração')">VALE3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'ELET3','Energia')">ELET3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'ENEV3','Energia')">ENEV3</div>
+      </div>
+
+      <div class="news-source-title" style="margin-top:20px;margin-bottom:12px;">Varejo & Consumo</div>
+      <div class="ticker-opt-grid">
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'MGLU3','Varejo')">MGLU3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'RENT3','Varejo')">RENT3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'LREN3','Varejo')">LREN3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'ASAI3','Varejo')">ASAI3</div>
+      </div>
+
+      <div class="news-source-title" style="margin-top:20px;margin-bottom:12px;">Transportes & Telecom</div>
+      <div class="ticker-opt-grid">
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'GOLL4','Aéreo')">GOLL4</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'AZUL4','Aéreo')">AZUL4</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'CCRO3','Concessão')">CCRO3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'VIVT3','Telecom')">VIVT3</div>
+        <div class="ticker-opt" onclick="selectOpcaoTicker(this,'TIMS3','Telecom')">TIMS3</div>
+      </div>
+
+      <!-- Painel de vencimentos -->
+      <div id="opcao-panel" style="display:none;margin-top:28px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--gold);" id="opcao-ticker-label">—</div>
+            <div style="font-size:13px;color:var(--ink-dim);margin-top:4px;">Selecione o vencimento para abrir a cadeia completa</div>
+          </div>
+        </div>
+        <div id="opcao-venc-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+
+    </div>
   </div>
 </div><!-- /page-opcoes -->
 
@@ -607,6 +601,34 @@
         document.getElementById('bcb-cdi').textContent = cdi.toFixed(2) + '% a.a. (CDI)';
       }
     } catch (e) { /* silencioso */ }
+  }
+
+  // --- Opções ---
+  const VENCIMENTOS_OPT = [
+    { label: 'AGO / 26', date: '2026-08-21', dias: 43 },
+    { label: 'SET / 26', date: '2026-09-18', dias: 71 },
+    { label: 'OUT / 26', date: '2026-10-16', dias: 99 },
+  ];
+
+  function selectOpcaoTicker(el, ticker, setor) {
+    document.querySelectorAll('.ticker-opt').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('opcao-ticker-label').textContent = ticker + ' · ' + setor;
+    document.getElementById('opcao-venc-list').innerHTML = VENCIMENTOS_OPT.map(v => `
+      <a class="venc-link" href="https://opcoes.net.br/opcoes/bovespa/${ticker}?vencimento=${v.date}" target="_blank" rel="noopener">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px;">${v.label} · ${v.date.split('-').reverse().join('/')}</div>
+          <div style="font-size:12px;color:var(--ink-dim);">${v.dias} dias até o vencimento · CALL e PUT</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--green);border:1px solid var(--green);padding:3px 8px;border-radius:3px;">CALL</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--red);border:1px solid var(--red);padding:3px 8px;border-radius:3px;">PUT</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);">Ver cadeia ↗</span>
+        </div>
+      </a>
+    `).join('');
+    document.getElementById('opcao-panel').style.display = 'block';
+    document.getElementById('opcao-panel').scrollIntoView({behavior:'smooth', block:'nearest'});
   }
 
   // --- Aluguel ---
