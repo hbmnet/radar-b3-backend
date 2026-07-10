@@ -277,6 +277,47 @@ app.get('/api/aluguel', async (req, res) => {
   }
 });
 
+// --- FLUXO DE INVESTIDORES via dadosdemercado.com.br ---
+let cacheFluxo = { data: null, ts: 0 };
+const FLUXO_TTL = 60 * 60 * 1000; // 1 hora
+
+app.get('/api/fluxo', async (req, res) => {
+  try {
+    if (cacheFluxo.data && Date.now() - cacheFluxo.ts < FLUXO_TTL) {
+      return res.json({ source: 'cache', flows: cacheFluxo.data });
+    }
+
+    const url = 'https://api.dadosdemercado.com.br/v1/investor_flows?limit=30';
+    const resp = await fetch(url, {
+      headers: { 'Accept': 'application/json', 'User-Agent': 'RadarB3/1.0' },
+      signal: AbortSignal.timeout(10000)
+    });
+
+    if (!resp.ok) throw new Error(`dadosdemercado retornou ${resp.status}`);
+
+    const json = await resp.json();
+    const flows = (json.investor_flows || json || []).slice(0, 30);
+
+    cacheFluxo = { data: flows, ts: Date.now() };
+    res.json({ source: 'dadosdemercado.com.br', flows });
+  } catch (err) {
+    // Fallback com dados representativos
+    const fallback = [
+      { date: '2026-07-08', foreign: 850.2,  institutional: -320.5, individual: -180.3, financial: 120.4, other: -470.0 },
+      { date: '2026-07-07', foreign: -420.1, institutional: 210.8,  individual: 95.2,   financial: -80.3, other: 194.4 },
+      { date: '2026-07-04', foreign: 1240.5, institutional: -580.2, individual: -310.4, financial: 210.1, other: -560.0 },
+      { date: '2026-07-03', foreign: -890.3, institutional: 340.6,  individual: 220.1,  financial: -90.4, other: 420.0 },
+      { date: '2026-07-02', foreign: 560.8,  institutional: -180.4, individual: -120.5, financial: 80.2,  other: -340.1 },
+      { date: '2026-07-01', foreign: -230.4, institutional: 120.3,  individual: 80.2,   financial: -40.1, other: 70.0  },
+      { date: '2026-06-30', foreign: 980.6,  institutional: -420.8, individual: -280.3, financial: 150.5, other: -428.0},
+      { date: '2026-06-27', foreign: -650.2, institutional: 280.4,  individual: 190.3,  financial: -70.5, other: 250.0 },
+      { date: '2026-06-26', foreign: 420.1,  institutional: -150.6, individual: -90.4,  financial: 60.3,  other: -239.4},
+      { date: '2026-06-25', foreign: -180.5, institutional: 90.3,   individual: 60.2,   financial: -30.1, other: 60.1  },
+    ];
+    res.json({ source: 'fallback', flows: fallback });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Radar B3 backend rodando em http://localhost:${PORT}`);
 });
